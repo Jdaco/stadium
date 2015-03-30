@@ -679,6 +679,7 @@ class MainWidget(urwidgets.CommandFrame):
         self.updateHpDv()
         self.updateStats()
 
+
     def setSpecialExp(self, value):
         poke = self.currentPokemon
         poke.specialExp = value
@@ -709,7 +710,7 @@ class MainWidget(urwidgets.CommandFrame):
         poke.happiness = happiness
 
     def setMove(self, pokemon, move, number):
-        if 'hidden Power' in move.lower():
+        if 'hidden power' in move.lower():
             t = move[13:move.index(')')]
             attack, defense = maps.hidden_power[t]
             poke = self.currentPokemon
