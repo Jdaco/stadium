@@ -26,6 +26,7 @@ class MainWidget(urwidgets.CommandFrame):
         }
 
         self.last_search = None
+        self.last_search_direction = None
 
         self.buff = domain.ROMBuffer(fname)
 
@@ -269,7 +270,7 @@ class MainWidget(urwidgets.CommandFrame):
             self.updateCenterColumn()
             moves_to_current()
 
-        def start_searching():
+        def start_searching(direction):
             current_list = self.columns.focus
             current_pos = current_list.focus_position
             current_list.body[current_pos].attrmap = 'item_focus'
@@ -277,7 +278,7 @@ class MainWidget(urwidgets.CommandFrame):
             # handles keypresses
             def handler(widget, text):
                 w = current_list.focus
-                self.inc_search(text, start=current_pos)
+                self.inc_search(text, start=current_pos, direction=direction)
                 if current_list.focus is not w:
                     w.attrmap = 'item'
                     current_list.focus.attrmap = 'item_focus'
@@ -291,9 +292,10 @@ class MainWidget(urwidgets.CommandFrame):
             # for submitting
             def exit_handler(text):
                 stop_searching()
-                self.search(text, start=current_pos)
+                self.search(text, start=current_pos, direction=direction)
 
-            self.startEditing(caption='/', callback=exit_handler)
+            caption = '/' if direction == 'forward' else '?'
+            self.startEditing(caption=caption, callback=exit_handler)
             urwid.connect_signal(self.edit, 'change', handler)
             self.edit.keymap['esc'] = utility.chain(
                 stop_searching,
@@ -423,7 +425,8 @@ class MainWidget(urwidgets.CommandFrame):
             self.moveList.shiftUp,
             amount=10
         )
-        self.moveList.keymap['/'] = (lambda x: start_searching())
+        self.moveList.keymap['/'] = (lambda x: start_searching('forward'))
+        self.moveList.keymap['?'] = (lambda x: start_searching('backward'))
         self.moveList.keymap['n'] = (lambda x: self.searchNext())
         self.moveList.keymap['N'] = (lambda x: self.searchPrev())
         self.moveList.keymap['g'] = (lambda x: self.moveList.top())
@@ -439,7 +442,8 @@ class MainWidget(urwidgets.CommandFrame):
             self.pokeList.shiftUp,
             amount=10
         )
-        self.pokeList.keymap['/'] = (lambda x: start_searching())
+        self.pokeList.keymap['/'] = (lambda x: start_searching('forward'))
+        self.pokeList.keymap['?'] = (lambda x: start_searching('backward'))
         self.pokeList.keymap['n'] = (lambda x: self.searchNext())
         self.pokeList.keymap['N'] = (lambda x: self.searchPrev())
         self.pokeList.keymap['g'] = (lambda x: self.pokeList.top())
@@ -543,7 +547,7 @@ class MainWidget(urwidgets.CommandFrame):
     def inc_search(self, query, start=0, direction='forward'):
         current_list = self.columns.focus
         current_pos = current_list.focus_position if start is None else start
-        predicate = (lambda x: query in x.base_widget.text)
+        predicate = (lambda x: query in x.base_widget.text.lower())
         index = current_list.find(
             predicate,
             start=current_pos,
@@ -556,9 +560,10 @@ class MainWidget(urwidgets.CommandFrame):
 
     def search(self, query, start=None, direction='forward'):
         self.last_search = query
+        self.last_search_direction = direction
         current_list = self.columns.focus
         current_pos = current_list.focus_position if start is None else start
-        predicate = (lambda x: query in x.base_widget.text)
+        predicate = (lambda x: query in x.base_widget.text.lower())
         index = current_list.find(
             predicate,
             start=current_pos,
@@ -571,11 +576,12 @@ class MainWidget(urwidgets.CommandFrame):
 
     def searchNext(self):
         if self.last_search:
-            self.search(self.last_search, direction='forward')
+            self.search(self.last_search, direction=self.last_search_direction)
 
     def searchPrev(self):
         if self.last_search:
-            self.search(self.last_search, direction='backward')
+            _direction = 'forward' if self.last_search_direction == 'backward' else 'backward'
+            self.search(self.last_search, direction=_direction)
 
     def updateMoves(self):
         self.currentMoveList.set(self.currentMoves())

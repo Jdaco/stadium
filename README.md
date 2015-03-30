@@ -13,6 +13,7 @@ A tool for modifying the rental set of Pokemon Stadium 2 N64 ROMs
  - `g` - Top of list
  - `G` - Bottom of list
  - `/` - Search column
+ - `?` - Search backwards
  - `n` - Next match
  - `N` - Previous match
  - `l` - Next column
