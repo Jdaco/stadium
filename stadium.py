@@ -547,7 +547,7 @@ class MainWidget(urwidgets.CommandFrame):
     def inc_search(self, query, start=0, direction='forward'):
         current_list = self.columns.focus
         current_pos = current_list.focus_position if start is None else start
-        predicate = (lambda x: query in x.base_widget.text.lower())
+        predicate = (lambda x: query.lower() in x.base_widget.text.lower())
         index = current_list.find(
             predicate,
             start=current_pos,
@@ -563,7 +563,7 @@ class MainWidget(urwidgets.CommandFrame):
         self.last_search_direction = direction
         current_list = self.columns.focus
         current_pos = current_list.focus_position if start is None else start
-        predicate = (lambda x: query in x.base_widget.text.lower())
+        predicate = (lambda x: query.lower() in x.base_widget.text.lower())
         index = current_list.find(
             predicate,
             start=current_pos,
@@ -709,7 +709,7 @@ class MainWidget(urwidgets.CommandFrame):
         poke.happiness = happiness
 
     def setMove(self, pokemon, move, number):
-        if 'Hidden Power' in move:
+        if 'hidden Power' in move.lower():
             t = move[13:move.index(')')]
             attack, defense = maps.hidden_power[t]
             poke = self.currentPokemon
