@@ -100,7 +100,6 @@ class MainWidget(urwidgets.CommandFrame):
             self.baseSpeed,
         ])
 
-        self.meters = {}
         self.level_meter = ui.LabeledMeter(
             'Level', 1, 100,
             initial=self.currentPokemon.level,
@@ -723,7 +722,7 @@ class MainWidget(urwidgets.CommandFrame):
     def setLevel(self, level):
         poke = self.currentPokemon
         poke.level = level
-        self.meters['level'].set_completion(poke.level)
+        self.level_meter.set_completion(poke.level)
         self.updateStats()
 
     def centerShiftDown(self):
