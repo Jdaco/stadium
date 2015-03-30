@@ -14,6 +14,7 @@ def unhandled(key):
     if key in ('q', 'Q'):
         raise urwid.ExitMainLoop()
 
+
 class MainWidget(urwidgets.CommandFrame):
     def __init__(self, fname):
         self.functions = {
@@ -35,7 +36,6 @@ class MainWidget(urwidgets.CommandFrame):
             for key, value in
             sorted(maps.moves.iteritems(), key=(lambda x: x[0]))
         ]
-
 
         def enter_species():
             self.startEditing(caption="Species: ", callback=self.setSpecies)
@@ -100,125 +100,142 @@ class MainWidget(urwidgets.CommandFrame):
             self.baseSpeed,
         ])
 
-        self.levelMeter = ui.LabeledMeter('Level', 1, 100,
-                                          initial=self.currentPokemon.level,
-                                          shiftFunc=self.setLevel)
-        self.happinessMeter = ui.LabeledMeter('Happiness', 0, 255,
-                                              initial=self.currentPokemon.happiness,
-                                              shiftFunc=self.setHappiness)
+        self.meters = {}
+        self.level_meter = ui.LabeledMeter(
+            'Level', 1, 100,
+            initial=self.currentPokemon.level,
+            shiftFunc=self.setLevel
+        )
+        self.happiness_meter = ui.LabeledMeter(
+            'Happiness', 0, 255,
+            initial=self.currentPokemon.happiness,
+            shiftFunc=self.setHappiness
+        )
+        self.attack_exp_meter = ui.LabeledMeter(
+            'Attack Exp.', 0, 65535,
+            initial=self.currentPokemon.attackExp,
+            shiftAmount=100,
+            shiftFunc=self.setAttackExp
+        )
+        self.hp_exp_meter = ui.LabeledMeter(
+            'HP Exp.', 0, 65535,
+            initial=self.currentPokemon.hpExp,
+            shiftAmount=100,
+            shiftFunc=self.setHpExp
+        )
+        self.defense_exp_meter = ui.LabeledMeter(
+            'Defense Exp.', 0, 65535,
+            initial=self.currentPokemon.defenseExp,
+            shiftAmount=100,
+            shiftFunc=self.setDefenseExp
+        )
+        self.speed_exp_meter = ui.LabeledMeter(
+            'Speed Exp.', 0, 65535,
+            initial=self.currentPokemon.speedExp,
+            shiftAmount=100,
+            shiftFunc=self.setSpeedExp
+        )
+        self.special_exp_meter = ui.LabeledMeter(
+            'Special Exp.', 0, 65535,
+            initial=self.currentPokemon.specialExp,
+            shiftAmount=100,
+            shiftFunc=self.setSpecialExp
+        )
+        self.attack_dv_meter = ui.LabeledMeter(
+            'Attack DV.', 0, 15,
+            initial=self.currentPokemon.attackDv,
+            shiftFunc=self.setAttackDv
+        )
+        self.defense_dv_meter = ui.LabeledMeter(
+            'Defense DV.', 0, 15,
+            initial=self.currentPokemon.defenseDv,
+            shiftFunc=self.setDefenseDv
+        )
+        self.speed_dv_meter = ui.LabeledMeter(
+            'Speed DV.', 0, 15,
+            initial=self.currentPokemon.speedDv,
+            shiftFunc=self.setSpeedDv
+        )
+        self.special_dv_meter = ui.LabeledMeter(
+            'Special DV.', 0, 15,
+            initial=self.currentPokemon.specialDv,
+            shiftFunc=self.setSpecialDv
+        )
+        self.hp_dv_meter = ui.LabeledMeter(
+            'HP DV.', 0, 15,
+            initial=self.currentPokemon.specialDv,
+            selectable=False
+        )
+        self.centerPile = urwidgets.MappedPile(
+            [
+                self.currentMoveList,
+                urwid.Divider('-', top=1, bottom=1),
+                self.basePile,
+                urwid.Divider(' '),
+                urwid.AttrMap(
+                    self.level_meter,
+                    'item', 'item_active'
+                ),
+                urwid.Divider(' '),
+                urwid.AttrMap(
+                    self.happiness_meter,
+                    'item', 'item_active'
+                ),
+                urwid.Divider(' '),
+                urwid.AttrMap(
+                    self.hp_exp_meter,
+                    'item', 'item_active'
+                ),
+                urwid.Divider(' '),
+                urwid.AttrMap(
+                    self.attack_exp_meter,
+                    'item', 'item_active'
+                ),
+                urwid.Divider(' '),
+                urwid.AttrMap(
+                    self.defense_exp_meter,
+                    'item', 'item_active'
+                ),
+                urwid.Divider(' '),
+                urwid.AttrMap(
+                    self.speed_exp_meter,
+                    'item', 'item_active'
+                ),
+                urwid.Divider(' '),
+                urwid.AttrMap(
+                    self.special_exp_meter,
+                    'item', 'item_active'
+                ),
+                urwid.Divider(' '),
+                urwid.AttrMap(
+                    self.hp_dv_meter,
+                    'item', 'item_active'
+                ),
+                urwid.Divider(' '),
+                urwid.AttrMap(
+                    self.attack_dv_meter,
+                    'item', 'item_active'
+                ),
+                urwid.Divider(' '),
+                urwid.AttrMap(
+                    self.defense_dv_meter,
+                    'item', 'item_active'
+                ),
+                urwid.Divider(' '),
+                urwid.AttrMap(
+                    self.speed_dv_meter,
+                    'item', 'item_active'
+                ),
+                urwid.Divider(' '),
+                urwid.AttrMap(
+                    self.special_dv_meter,
+                    'item', 'item_active'
+                ),
+            ],
+            constraint=lambda x, y: y.selectable()
+        )
 
-        self.attackExpMeter = ui.LabeledMeter('Attack Exp.', 0, 65535,
-                                              initial=self.currentPokemon.attackExp,
-                                              shiftAmount=100,
-                                              shiftFunc=self.setAttackExp)
-
-        self.hpExpMeter = ui.LabeledMeter('HP Exp.', 0, 65535,
-                                          initial=self.currentPokemon.hpExp,
-                                          shiftAmount=100,
-                                          shiftFunc=self.setHpExp)
-
-        self.defenseExpMeter = ui.LabeledMeter('Defense Exp.', 0, 65535,
-                                               initial=self.currentPokemon.defenseExp,
-                                               shiftAmount=100,
-                                               shiftFunc=self.setDefenseExp)
-
-        self.speedExpMeter = ui.LabeledMeter('Speed Exp.', 0, 65535,
-                                             initial=self.currentPokemon.speedExp,
-                                             shiftAmount=100,
-                                             shiftFunc=self.setSpeedExp)
-
-        self.specialExpMeter = ui.LabeledMeter('Special Exp.', 0, 65535,
-                                               initial=self.currentPokemon.specialExp,
-                                               shiftAmount=100,
-                                               shiftFunc=self.setSpecialExp)
-
-        self.attackDvMeter = ui.LabeledMeter('Attack DV.', 0, 15,
-                                             initial=self.currentPokemon.attackDv,
-                                             shiftFunc=self.setAttackDv)
-
-        self.defenseDvMeter = ui.LabeledMeter('Defense DV.', 0, 15,
-                                              initial=self.currentPokemon.defenseDv,
-                                              shiftFunc=self.setDefenseDv)
-
-        self.speedDvMeter = ui.LabeledMeter('Speed DV.', 0, 15,
-                                            initial=self.currentPokemon.speedDv,
-                                            shiftFunc=self.setSpeedDv)
-
-        self.specialDvMeter = ui.LabeledMeter('Special DV.', 0, 15,
-                                              initial=self.currentPokemon.specialDv,
-                                              shiftFunc=self.setSpecialDv)
-
-        self.hpDvMeter = ui.LabeledMeter('HP DV.', 0, 15,
-                                         initial=self.currentPokemon.specialDv,
-                                         selectable=False)
-
-        self.centerPile = urwidgets.MappedPile([self.currentMoveList,
-                                               urwid.Divider('-', top=1, bottom=1),
-                                               self.basePile,
-                                               urwid.Divider(' '),
-                                               urwid.AttrMap(
-                                                   self.levelMeter,
-                                                   'item', 'item_active'
-                                               ),
-                                               urwid.Divider(' '),
-                                               urwid.AttrMap(
-                                                   self.happinessMeter,
-                                                   'item', 'item_active'
-                                               ),
-                                               urwid.Divider(' '),
-                                               urwid.AttrMap(
-                                                   self.hpExpMeter,
-                                                   'item', 'item_active'
-                                               ),
-                                               urwid.Divider(' '),
-                                               urwid.AttrMap(
-                                                   self.attackExpMeter,
-                                                   'item', 'item_active'
-                                               ),
-                                               urwid.Divider(' '),
-                                               urwid.AttrMap(
-                                                   self.defenseExpMeter,
-                                                   'item', 'item_active'
-                                               ),
-                                               urwid.Divider(' '),
-                                               urwid.AttrMap(
-                                                   self.speedExpMeter,
-                                                   'item', 'item_active'
-                                               ),
-                                               urwid.Divider(' '),
-                                               urwid.AttrMap(
-                                                   self.specialExpMeter,
-                                                   'item', 'item_active'
-                                               ),
-                                               urwid.Divider(' '),
-                                               urwid.AttrMap(
-                                                   self.hpDvMeter,
-                                                   'item', 'item_active'
-                                               ),
-                                               urwid.Divider(' '),
-                                               urwid.AttrMap(
-                                                   self.attackDvMeter,
-                                                   'item', 'item_active'
-                                               ),
-                                               urwid.Divider(' '),
-                                               urwid.AttrMap(
-                                                   self.defenseDvMeter,
-                                                   'item', 'item_active'
-                                               ),
-                                               urwid.Divider(' '),
-                                               urwid.AttrMap(
-                                                   self.speedDvMeter,
-                                                   'item', 'item_active'
-                                               ),
-                                               urwid.Divider(' '),
-                                               urwid.AttrMap(
-                                                   self.specialDvMeter,
-                                                   'item', 'item_active'
-                                               ),
-                                               ],
-                                               constraint=(lambda x, y: y.selectable()))
-
-        #for convenience in meter setup
+        # for convenience in meter setup
         def set_bar_value(func, bar):
             def inner(value_string):
                 value = int(value_string)
@@ -226,7 +243,7 @@ class MainWidget(urwidgets.CommandFrame):
                 bar.set_completion(value)
             return inner
 
-        #column transition functions
+        # column transition functions
         def moves_to_current():
             self.unsetActive(self.currentMoveList.focus)
             self.columns.focus_position = 1
@@ -252,13 +269,13 @@ class MainWidget(urwidgets.CommandFrame):
             self.setMove(poke, move, index)
             self.updateCenterColumn()
             moves_to_current()
-            
+
         def start_searching():
             current_list = self.columns.focus
             current_pos = current_list.focus_position
             current_list.body[current_pos].attrmap = 'item_focus'
 
-            #handles keypresses
+            # handles keypresses
             def handler(widget, text):
                 w = current_list.focus
                 self.inc_search(text, start=current_pos)
@@ -266,120 +283,128 @@ class MainWidget(urwidgets.CommandFrame):
                     w.attrmap = 'item'
                     current_list.focus.attrmap = 'item_focus'
 
-            #for canceling
+            # for canceling
             def stop_searching():
                 current_list.focus.attrmap = 'item'
                 urwid.disconnect_signal(self.edit, 'change', handler)
                 current_list.set_focus(current_pos)
-                
-            #for submitting
+
+            # for submitting
             def exit_handler(text):
                 stop_searching()
                 self.search(text, start=current_pos)
 
             self.startEditing(caption='/', callback=exit_handler)
-            urwid.connect_signal(self.edit, 'change', handler) 
-            self.edit.keymap['esc'] = utility.chain(stop_searching, self.edit.keymap['esc'])
+            urwid.connect_signal(self.edit, 'change', handler)
+            self.edit.keymap['esc'] = utility.chain(
+                stop_searching,
+                self.edit.keymap['esc']
+            )
 
-
-        self.levelMeter.keymap['enter'] = (
+        self.level_meter.keymap['enter'] = (
             lambda: self.startEditing(
                 caption='Level: ',
-                callback=set_bar_value(self.setLevel, self.levelMeter)
+                callback=set_bar_value(self.setLevel, self.level_meter)
             )
         )
-        self.levelMeter.keymap['>'] = self.levelMeter.increment
-        self.levelMeter.keymap['<'] = self.levelMeter.decrement
+        self.level_meter.keymap['>'] = self.level_meter.increment
+        self.level_meter.keymap['<'] = self.level_meter.decrement
 
-        self.happinessMeter.keymap['enter'] = (
+        self.happiness_meter.keymap['enter'] = (
             lambda: self.startEditing(
                 caption='Happiness: ',
-                callback=set_bar_value(self.setHappiness, self.happinessMeter)
+                callback=set_bar_value(self.setHappiness, self.happiness_meter)
             )
         )
-        self.happinessMeter.keymap['>'] = self.happinessMeter.increment
-        self.happinessMeter.keymap['<'] = self.happinessMeter.decrement
+        self.happiness_meter.keymap['>'] = self.happiness_meter.increment
+        self.happiness_meter.keymap['<'] = self.happiness_meter.decrement
 
-        self.attackExpMeter.keymap['enter'] = (
+        self.attack_exp_meter.keymap['enter'] = (
             lambda: self.startEditing(
                 caption='Attack Exp: ',
-                callback=set_bar_value(self.setAttackExp, self.attackExpMeter)
+                callback=set_bar_value(
+                    self.setAttackExp, self.attack_exp_meter
+                )
             )
         )
-        self.attackExpMeter.keymap['>'] = self.attackExpMeter.increment
-        self.attackExpMeter.keymap['<'] = self.attackExpMeter.decrement
+        self.attack_exp_meter.keymap['>'] = self.attack_exp_meter.increment
+        self.attack_exp_meter.keymap['<'] = self.attack_exp_meter.decrement
 
-        self.hpExpMeter.keymap['enter'] = (
+        self.hp_exp_meter.keymap['enter'] = (
             lambda: self.startEditing(
                 caption='HP Exp: ',
-                callback=set_bar_value(self.setHpExp, self.hpExpMeter)
+                callback=set_bar_value(self.setHpExp, self.hp_exp_meter)
             )
         )
-        self.hpExpMeter.keymap['>'] = self.hpExpMeter.increment
-        self.hpExpMeter.keymap['<'] = self.hpExpMeter.decrement
+        self.hp_exp_meter.keymap['>'] = self.hp_exp_meter.increment
+        self.hp_exp_meter.keymap['<'] = self.hp_exp_meter.decrement
 
-        self.defenseExpMeter.keymap['enter'] = (
+        self.defense_exp_meter.keymap['enter'] = (
             lambda: self.startEditing(
                 caption='Defense Exp: ',
-                callback=set_bar_value(self.setDefenseExp, self.defenseExpMeter)
+                callback=set_bar_value(
+                    self.setDefenseExp, self.defense_exp_meter
+                )
             )
         )
-        self.defenseExpMeter.keymap['>'] = self.defenseExpMeter.increment
-        self.defenseExpMeter.keymap['<'] = self.defenseExpMeter.decrement
+        self.defense_exp_meter.keymap['>'] = self.defense_exp_meter.increment
+        self.defense_exp_meter.keymap['<'] = self.defense_exp_meter.decrement
 
-        self.speedExpMeter.keymap['enter'] = (
+        self.speed_exp_meter.keymap['enter'] = (
             lambda: self.startEditing(
                 caption='Speed Exp: ',
-                callback=set_bar_value(self.setSpeedExp, self.speedExpMeter)
+                callback=set_bar_value(self.setSpeedExp, self.speed_exp_meter)
             )
         )
-        self.speedExpMeter.keymap['>'] = self.speedExpMeter.increment
-        self.speedExpMeter.keymap['<'] = self.speedExpMeter.decrement
+        self.speed_exp_meter.keymap['>'] = self.speed_exp_meter.increment
+        self.speed_exp_meter.keymap['<'] = self.speed_exp_meter.decrement
 
-        self.specialExpMeter.keymap['enter'] = (
+        self.special_exp_meter.keymap['enter'] = (
             lambda: self.startEditing(
                 caption='Special Exp: ',
-                callback=set_bar_value(self.setSpecialExp, self.specialExpMeter)
+                callback=set_bar_value(
+                    self.setSpecialExp, self.special_exp_meter
+                )
             )
         )
-        self.specialExpMeter.keymap['>'] = self.specialExpMeter.increment
-        self.specialExpMeter.keymap['<'] = self.specialExpMeter.decrement
+        self.special_exp_meter.keymap['>'] = self.special_exp_meter.increment
+        self.special_exp_meter.keymap['<'] = self.special_exp_meter.decrement
 
-        self.attackDvMeter.keymap['enter'] = (
+        self.attack_dv_meter.keymap['enter'] = (
             lambda: self.startEditing(
                 caption='Attack DV: ',
-                callback=set_bar_value(self.setAttackDv, self.attackDvMeter)
+                callback=set_bar_value(self.setAttackDv, self.attack_dv_meter)
             )
         )
-        self.attackDvMeter.keymap['>'] = self.attackDvMeter.increment
-        self.attackDvMeter.keymap['<'] = self.attackDvMeter.decrement
+        self.attack_dv_meter.keymap['>'] = self.attack_dv_meter.increment
+        self.attack_dv_meter.keymap['<'] = self.attack_dv_meter.decrement
 
-        self.defenseDvMeter.keymap['enter'] = (
+        self.defense_dv_meter.keymap['enter'] = (
             lambda: self.startEditing(
                 caption='Defense DV: ',
-                callback=set_bar_value(self.setDefenseDv, self.defenseDvMeter)
+                callback=set_bar_value(self.setDefenseDv, self.defense_dv_meter)
             )
         )
-        self.defenseDvMeter.keymap['>'] = self.defenseDvMeter.increment
-        self.defenseDvMeter.keymap['<'] = self.defenseDvMeter.decrement
+        self.defense_dv_meter.keymap['>'] = self.defense_dv_meter.increment
+        self.defense_dv_meter.keymap['<'] = self.defense_dv_meter.decrement
 
-        self.speedDvMeter.keymap['enter'] = (
+        self.speed_dv_meter.keymap['enter'] = (
             lambda: self.startEditing(
                 caption='Speed DV: ',
-                callback=set_bar_value(self.setSpeedDv, self.speedDvMeter)
+                callback=set_bar_value(self.setSpeedDv, self.speed_dv_meter)
             )
         )
-        self.speedDvMeter.keymap['>'] = self.speedDvMeter.increment
-        self.speedDvMeter.keymap['<'] = self.speedDvMeter.decrement
+        self.speed_dv_meter.keymap['>'] = self.speed_dv_meter.increment
+        self.speed_dv_meter.keymap['<'] = self.speed_dv_meter.decrement
 
-        self.specialDvMeter.keymap['enter'] = (
+        self.special_dv_meter.keymap['enter'] = (
             lambda: self.startEditing(
                 caption='Special DV: ',
-                callback=set_bar_value(self.setSpecialDv, self.specialDvMeter)
+                callback=set_bar_value(self.setSpecialDv, self.special_dv_meter)
             )
         )
-        self.specialDvMeter.keymap['>'] = self.specialDvMeter.increment
-        self.specialDvMeter.keymap['<'] = self.specialDvMeter.decrement
+        self.special_dv_meter.keymap['>'] = self.special_dv_meter.increment
+        self.special_dv_meter.keymap['<'] = self.special_dv_meter.decrement
 
         self.currentMoveList.keymap['j'] = self.currentMoveList.shiftDown
         self.currentMoveList.keymap['k'] = self.currentMoveList.shiftUp
@@ -391,8 +416,14 @@ class MainWidget(urwidgets.CommandFrame):
         self.moveList.keymap['enter'] = lambda x: moves_set_move()
         self.moveList.keymap['j'] = self.moveList.shiftDown
         self.moveList.keymap['k'] = self.moveList.shiftUp
-        self.moveList.keymap['J'] = functools.partial(self.moveList.shiftDown, amount=10)
-        self.moveList.keymap['K'] = functools.partial(self.moveList.shiftUp, amount=10)
+        self.moveList.keymap['J'] = functools.partial(
+            self.moveList.shiftDown,
+            amount=10
+        )
+        self.moveList.keymap['K'] = functools.partial(
+            self.moveList.shiftUp,
+            amount=10
+        )
         self.moveList.keymap['/'] = (lambda x: start_searching())
         self.moveList.keymap['n'] = (lambda x: self.searchNext())
         self.moveList.keymap['N'] = (lambda x: self.searchPrev())
@@ -401,8 +432,14 @@ class MainWidget(urwidgets.CommandFrame):
 
         self.pokeList.keymap['j'] = self.pokeList.shiftDown
         self.pokeList.keymap['k'] = self.pokeList.shiftUp
-        self.pokeList.keymap['J'] = functools.partial(self.pokeList.shiftDown, amount=10)
-        self.pokeList.keymap['K'] = functools.partial(self.pokeList.shiftUp, amount=10)
+        self.pokeList.keymap['J'] = functools.partial(
+            self.pokeList.shiftDown,
+            amount=10
+        )
+        self.pokeList.keymap['K'] = functools.partial(
+            self.pokeList.shiftUp,
+            amount=10
+        )
         self.pokeList.keymap['/'] = (lambda x: start_searching())
         self.pokeList.keymap['n'] = (lambda x: self.searchNext())
         self.pokeList.keymap['N'] = (lambda x: self.searchPrev())
@@ -413,10 +450,13 @@ class MainWidget(urwidgets.CommandFrame):
         self.centerPile.keymap['k'] = self.centerPile.shiftUp
         self.centerPile.keymap['g'] = self.centerPile.top
         self.centerPile.keymap['G'] = self.centerPile.bottom
+        self.centerPile.keymap['h'] = current_to_poke
 
-        self.columns = urwid.Columns(
-            [self.pokeList, urwid.Filler(self.centerPile, valign='top'), self.moveList]
-        )
+        self.columns = urwid.Columns([
+                self.pokeList,
+                urwid.Filler(self.centerPile, valign='top'),
+                self.moveList
+        ])
 
         self.updateCenterColumn()
         super(MainWidget, self).__init__(self.columns)
@@ -429,8 +469,9 @@ class MainWidget(urwidgets.CommandFrame):
             with open(fname, 'r') as fp:
                 importedPokes = sorted(
                     json.load(fp),
-                    cmp=(lambda x, y:
-                        cmp(maps.pokemon[str(x[u'species']).lower()],
+                    cmp=(
+                        lambda x, y: cmp(
+                            maps.pokemon[str(x[u'species']).lower()],
                             maps.pokemon[str(y[u'species']).lower()]
                         )
                     )
@@ -504,7 +545,11 @@ class MainWidget(urwidgets.CommandFrame):
         current_list = self.columns.focus
         current_pos = current_list.focus_position if start is None else start
         predicate = (lambda x: query in x.base_widget.text)
-        index = current_list.find(predicate, start=current_pos, direction=direction)
+        index = current_list.find(
+            predicate,
+            start=current_pos,
+            direction=direction
+        )
         if index == -1:
             current_list.set_focus(start)
         else:
@@ -515,7 +560,11 @@ class MainWidget(urwidgets.CommandFrame):
         current_list = self.columns.focus
         current_pos = current_list.focus_position if start is None else start
         predicate = (lambda x: query in x.base_widget.text)
-        index = current_list.find(predicate, start=current_pos, direction=direction)
+        index = current_list.find(
+            predicate,
+            start=current_pos,
+            direction=direction
+        )
         if index == -1:
             self.changeStatus('%s Not Found.' % query)
         else:
@@ -544,18 +593,18 @@ class MainWidget(urwidgets.CommandFrame):
     def updateCenterColumn(self):
         self.updateMoves()
         poke = self.currentPokemon
-        self.levelMeter.set_completion(poke.level)
-        self.happinessMeter.set_completion(poke.happiness)
-        self.attackExpMeter.set_completion(poke.attackExp)
-        self.hpExpMeter.set_completion(poke.hpExp)
-        self.defenseExpMeter.set_completion(poke.defenseExp)
-        self.speedExpMeter.set_completion(poke.speedExp)
-        self.specialExpMeter.set_completion(poke.specialExp)
+        self.level_meter.set_completion(poke.level)
+        self.happiness_meter.set_completion(poke.happiness)
+        self.attack_exp_meter.set_completion(poke.attackExp)
+        self.hp_exp_meter.set_completion(poke.hpExp)
+        self.defense_exp_meter.set_completion(poke.defenseExp)
+        self.speed_exp_meter.set_completion(poke.speedExp)
+        self.special_exp_meter.set_completion(poke.specialExp)
         self.updateHpDv()
-        self.attackDvMeter.set_completion(poke.attackDv)
-        self.defenseDvMeter.set_completion(poke.defenseDv)
-        self.speedDvMeter.set_completion(poke.speedDv)
-        self.specialDvMeter.set_completion(poke.specialDv)
+        self.attack_dv_meter.set_completion(poke.attackDv)
+        self.defense_dv_meter.set_completion(poke.defenseDv)
+        self.speed_dv_meter.set_completion(poke.speedDv)
+        self.special_dv_meter.set_completion(poke.specialDv)
         self.updateStats()
 
     def updateLeftColumn(self):
@@ -571,7 +620,7 @@ class MainWidget(urwidgets.CommandFrame):
 
     def updateHpDv(self):
         poke = self.currentPokemon
-        self.hpDvMeter.set_completion(poke.hpDv)
+        self.hp_dv_meter.set_completion(poke.hpDv)
 
     def maxPokemon(self):
         poke = self.currentPokemon
@@ -674,7 +723,7 @@ class MainWidget(urwidgets.CommandFrame):
     def setLevel(self, level):
         poke = self.currentPokemon
         poke.level = level
-        self.levelMeter.set_completion(poke.level)
+        self.meters['level'].set_completion(poke.level)
         self.updateStats()
 
     def centerShiftDown(self):
@@ -687,14 +736,19 @@ class MainWidget(urwidgets.CommandFrame):
     def currentMoves(self):
         poke = self.currentPokemon
         return [
-                urwidgets.MappedText(
-                    '-----' if move is None else
-                        'Hidden Power(%s)' % poke.hiddenPowerType
-                        if move == 'hidden power'
-                        else utility.capWord(move),
-                    'item', 'item_focus'
-                )
-            for move in (poke.moveOne, poke.moveTwo, poke.moveThree, poke.moveFour)
+            urwidgets.MappedText(
+                '-----' if move is None else
+                'Hidden Power(%s)' % poke.hiddenPowerType
+                if move == 'hidden power'
+                else utility.capWord(move),
+                'item', 'item_focus'
+            )
+            for move in (
+                poke.moveOne,
+                poke.moveTwo,
+                poke.moveThree,
+                poke.moveFour
+            )
         ]
 
     def setActive(self, widget):
