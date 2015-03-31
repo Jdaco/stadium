@@ -27,5 +27,5 @@ A tool for modifying the rental set of Pokemon Stadium 2 N64 ROMs
  - `write [filename]` - Write to the current file (or optional filename)
  - `import [filename]` - import data from json file
  - `export [filename]` - export data to json file
- - `max` - Max out all meters for the current pokemon
- - `maxall` - Max out all meters for everypokemon
+ - `max[!]` - Max out all meters for the current pokemon (add `!` to overwrite Hidden Power type)
+ - `maxall[!]` - Max out all meters for everypokemon (add `!` to overwrite Hidden Power type)

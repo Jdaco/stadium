@@ -17,9 +17,9 @@ class MainWidget(urwidgets.CommandFrame):
             'import': self.import_json,
             'export': self.export_json,
             'max': self.maxPokemon,
-            'max!': partial(self.maxPokemon, overwrite=True)
-            'maxall': self.maxAllPokemon
-            'maxall!': partial(self.maxAllPokemon, overwrite=True)
+            'max!': partial(self.maxPokemon, overwrite=True),
+            'maxall': self.maxAllPokemon,
+            'maxall!': partial(self.maxAllPokemon, overwrite=True),
         }
 
         self.last_search = None
@@ -559,24 +559,27 @@ class MainWidget(urwidgets.CommandFrame):
         poke = self.currentPokemon
         self.hp_dv_meter.set_completion(poke.hpDv)
 
-    def maxPokemon(self, overwite=False):
+    def maxPokemon(self, overwrite=False):
         poke = self.currentPokemon
         h_type = poke.hiddenPowerType
         poke.max()
+
+        if not overwrite and 'hidden power' in poke.moves:
+            poke.hiddenPowerType = h_type
+
         self.updateCenterColumn()
         self.updateHpDv()
-        if not overwrite:
-            poke.hiddenPowerType = h_type
 
     def maxAllPokemon(self, overwrite=False):
         if not overwrite:
             for pokemon in self.pokemon:
-                pokemon.max()
-        else:
-            for pokemon in self.pokemon:
                 h_type = pokemon.hiddenPowerType
                 pokemon.max()
-                pokemon.hiddenPowerType = h_type
+                if 'hidden power' in pokemon.moves:
+                    pokemon.hiddenPowerType = h_type
+        else:
+            for pokemon in self.pokemon:
+                pokemon.max()
             
         self.updateCenterColumn()
         self.updateHpDv()
@@ -650,22 +653,13 @@ class MainWidget(urwidgets.CommandFrame):
         poke = self.currentPokemon
         poke.happiness = happiness
 
-    def setMove(self, pokemon, move, number):
+    def setMove(self, pokemon, move, index):
         if 'hidden power' in move.lower():
             t = move[13:move.index(')')]
-            attack, defense = maps.hidden_power[t]
             poke = self.currentPokemon
-            poke.attackDv = domain.normalize(poke.attackDv, attack)
-            poke.defenseDv = domain.normalize(poke.defenseDv, defense)
+            poke.hiddenPowerType = t
             move = 'hidden power'
-        if number == 0:
-            pokemon.moveOne = move
-        elif number == 1:
-            pokemon.moveTwo = move
-        elif number == 2:
-            pokemon.moveThree = move
-        elif number == 3:
-            pokemon.moveFour = move
+        pokemon.moves[index] = move
 
     def setLevel(self, level):
         poke = self.currentPokemon
@@ -690,12 +684,7 @@ class MainWidget(urwidgets.CommandFrame):
                 else utility.capWord(move),
                 'item', 'item_focus'
             )
-            for move in (
-                poke.moveOne,
-                poke.moveTwo,
-                poke.moveThree,
-                poke.moveFour
-            )
+            for move in poke.moves
         ]
 
     def setActive(self, widget):
