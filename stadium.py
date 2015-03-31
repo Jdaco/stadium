@@ -580,8 +580,10 @@ class MainWidget(urwidgets.CommandFrame):
 
     def searchPrev(self):
         if self.last_search:
+            last_search = self.last_search_direction
             _direction = 'forward' if self.last_search_direction == 'backward' else 'backward'
             self.search(self.last_search, direction=_direction)
+            self.last_search_direction = last_search
 
     def updateMoves(self):
         self.currentMoveList.set(self.currentMoves())
