@@ -99,67 +99,67 @@ class MainWidget(urwidgets.CommandFrame):
         ])
 
         self.level_meter = ui.LabeledMeter(
-            'Level', 1, 100,
+            'Level', 1, 100, 'progress', 'progress_red',
             initial=self.currentPokemon.level,
             shiftFunc=self.setLevel
         )
         self.happiness_meter = ui.LabeledMeter(
-            'Happiness', 0, 255,
+            'Happiness', 0, 255, 'progress', 'progress_red',
             initial=self.currentPokemon.happiness,
             shiftFunc=self.setHappiness
         )
         self.attack_exp_meter = ui.LabeledMeter(
-            'Attack Exp.', 0, 65535,
+            'Attack Exp.', 0, 65535, 'progress', 'progress_blue',
             initial=self.currentPokemon.attackExp,
             shiftAmount=100,
             shiftFunc=self.setAttackExp
         )
         self.hp_exp_meter = ui.LabeledMeter(
-            'HP Exp.', 0, 65535,
+            'HP Exp.', 0, 65535, 'progress', 'progress_blue',
             initial=self.currentPokemon.hpExp,
             shiftAmount=100,
             shiftFunc=self.setHpExp
         )
         self.defense_exp_meter = ui.LabeledMeter(
-            'Defense Exp.', 0, 65535,
+            'Defense Exp.', 0, 65535, 'progress', 'progress_blue',
             initial=self.currentPokemon.defenseExp,
             shiftAmount=100,
             shiftFunc=self.setDefenseExp
         )
         self.speed_exp_meter = ui.LabeledMeter(
-            'Speed Exp.', 0, 65535,
+            'Speed Exp.', 0, 65535, 'progress', 'progress_blue',
             initial=self.currentPokemon.speedExp,
             shiftAmount=100,
             shiftFunc=self.setSpeedExp
         )
         self.special_exp_meter = ui.LabeledMeter(
-            'Special Exp.', 0, 65535,
+            'Special Exp.', 0, 65535, 'progress', 'progress_blue',
             initial=self.currentPokemon.specialExp,
             shiftAmount=100,
             shiftFunc=self.setSpecialExp
         )
         self.attack_dv_meter = ui.LabeledMeter(
-            'Attack DV.', 0, 15,
+            'Attack DV.', 0, 15, 'progress', 'progress_cyan',
             initial=self.currentPokemon.attackDv,
             shiftFunc=self.setAttackDv
         )
         self.defense_dv_meter = ui.LabeledMeter(
-            'Defense DV.', 0, 15,
+            'Defense DV.', 0, 15, 'progress', 'progress_cyan',
             initial=self.currentPokemon.defenseDv,
             shiftFunc=self.setDefenseDv
         )
         self.speed_dv_meter = ui.LabeledMeter(
-            'Speed DV.', 0, 15,
+            'Speed DV.', 0, 15, 'progress', 'progress_cyan',
             initial=self.currentPokemon.speedDv,
             shiftFunc=self.setSpeedDv
         )
         self.special_dv_meter = ui.LabeledMeter(
-            'Special DV.', 0, 15,
+            'Special DV.', 0, 15, 'progress', 'progress_cyan',
             initial=self.currentPokemon.specialDv,
             shiftFunc=self.setSpecialDv
         )
         self.hp_dv_meter = ui.LabeledMeter(
-            'HP DV.', 0, 15,
+            'HP DV.', 0, 15, 'progress', 'progress_cyan',
             initial=self.currentPokemon.specialDv,
             selectable=False
         )

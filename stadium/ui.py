@@ -36,8 +36,11 @@ class LeftRightWidget(urwidgets.MappedText):
 
 class LabeledMeter(urwid.WidgetWrap):
     def __init__(self, label, left_bound, right_bound,
-                 initial=0, shiftAmount=1, shiftFunc=None, selectable=True, keymap={}):
-        self.progress = urwid.ProgressBar('progress', 'progress_red',
+                 normal, complete,
+                 initial=0, shiftAmount=1,
+                 shiftFunc=None, selectable=True,
+                 keymap={}):
+        self.progress = urwid.ProgressBar(normal, complete,
                                           current=initial,
                                           done=right_bound)
 
@@ -54,6 +57,9 @@ class LabeledMeter(urwid.WidgetWrap):
         self.pile = urwid.Pile([self.label, self.progress])
 
         super(LabeledMeter, self).__init__(self.pile)
+
+    def selectable(self):
+        return self._s
 
     def keypress(self, size, key):
         key = super(LabeledMeter, self).keypress(size, key)
@@ -77,9 +83,6 @@ class LabeledMeter(urwid.WidgetWrap):
         current = self.scroll(completion - self.scroll())
         self.progress.set_completion(current)
         self.label.setRight(str(current))
-
-    def selectable(self):
-        return self._s
 
 
 class SelectableWrapper(urwid.WidgetWrap):
