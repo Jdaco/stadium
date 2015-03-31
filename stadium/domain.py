@@ -2,9 +2,6 @@
 import maps
 import math
 
-def normalize(value, rem):
-    return value + (rem - (value % 4))
-
 class ROMBuffer(object):
 
     _base = 0x99080
@@ -52,13 +49,37 @@ class ROMBuffer(object):
             fp.write(self.binary)
 
 
+class Moveset(object):
+    def __init__(index, buff):
+        self.byteIndex = index
+        self.buff = buff
+
+    def __contains__(self, value):
+        return value in (
+            self[0]
+            self[1]
+            self[2]
+            self[3]
+        )
+
+    def __getitem__(self, index):
+        if index > 3 or index < 0:
+            raise ValueError("Invalid index")
+        byte = self.buff[self.byteIndex + index]
+        if byte == 0:
+            return None
+        return maps.moves_reversed[byte]
+
+    def __setitem__(self, index, value):
+        if index > 3 or index < 0:
+            raise ValueError("Invalid index")
+        move = maps.moves[value.lower()] if value is not None else 0
+        self.rom[self.byteIndex + index] = move
+    
 class Pokemon(object):
     _level = 0
     _species = 1
-    _moveOne = 4
-    _moveTwo = 5
-    _moveThree = 6
-    _moveFour = 7
+    _moveStart = 4
     _happiness = 9
     _hpExp = 10
     _attackExp = 12
@@ -73,6 +94,7 @@ class Pokemon(object):
     def __init__(self, rom, index):
         self.rom = rom
         self.index = index
+        self.moves = Moveset(index + self._moveStart, rom)
 
     def _getPokemon(self, index):
         return self.rom.pokemonAt(self.index)[index]
@@ -104,6 +126,12 @@ class Pokemon(object):
             self.defenseDv % 4,
         )]
 
+    @hiddenPowerType.setter
+    def hiddenPowerType(self, value):
+        attack, defense = maps.hidden_power[value]
+        self.attackDv = self.attackDv + (attack - (self.attackDv % 4))
+        self.defenseDv = self.defenseDv + (defense - (self.defenseDv % 4))
+
     @property
     def species(self):
         return maps.pokemon_reversed[self._getPokemon(self._species)]
@@ -111,54 +139,6 @@ class Pokemon(object):
     @species.setter
     def species(self, value):
         self.rom.setValue(self.index, self._species, maps.pokemon[value.lower()])
-
-    @property
-    def moveOne(self):
-        byte = self._getPokemon(self._moveOne)
-        if byte == 0:
-            return None
-        return maps.moves_reversed[self._getPokemon(self._moveOne)]
-
-    @moveOne.setter
-    def moveOne(self, value):
-        move = maps.moves[value.lower()] if value is not None else 0
-        self.rom.setValue(self.index, self._moveOne, move)
-
-    @property
-    def moveTwo(self):
-        byte = self._getPokemon(self._moveTwo)
-        if byte == 0:
-            return None
-        return maps.moves_reversed[self._getPokemon(self._moveTwo)]
-
-    @moveTwo.setter
-    def moveTwo(self, value):
-        move = maps.moves[value.lower()] if value is not None else 0
-        self.rom.setValue(self.index, self._moveTwo, move)
-
-    @property
-    def moveThree(self):
-        byte = self._getPokemon(self._moveThree)
-        if byte == 0:
-            return None
-        return maps.moves_reversed[self._getPokemon(self._moveThree)]
-
-    @moveThree.setter
-    def moveThree(self, value):
-        move = maps.moves[value.lower()] if value is not None else 0
-        self.rom.setValue(self.index, self._moveThree, move)
-
-    @property
-    def moveFour(self):
-        byte = self._getPokemon(self._moveFour)
-        if byte == 0:
-            return None
-        return maps.moves_reversed[self._getPokemon(self._moveFour)]
-
-    @moveFour.setter
-    def moveFour(self, value):
-        move = maps.moves[value.lower()] if value is not None else 0
-        self.rom.setValue(self.index, self._moveFour, move)
 
     @property
     def level(self):

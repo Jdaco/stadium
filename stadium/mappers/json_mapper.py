@@ -15,25 +15,25 @@ def load(fp, buff):
     for poke, i_poke in itertools.izip(buff.pokemon, importedPokes):
         poke.species = \
             str(i_poke[u'species'].lower())
-        poke.moveOne = \
+        poke.moves[0] = \
             str(i_poke[u'move1'].lower()) \
             if u'move1' in i_poke \
             and i_poke[u'move1'] \
             else None
-        poke.moveTwo = \
+        poke.moves[1] = \
             str(i_poke[u'move2'].lower()) \
             if u'move2' in i_poke \
             and i_poke[u'move2'] \
             else None
-        poke.moveThree = \
+        poke.moves[2] = \
             str(i_poke[u'move3'].lower()) \
             if u'move3' in i_poke \
             and i_poke[u'move3'] \
             else None
-        poke.moveFour = \
+        poke.moves[3] = \
             str(i_poke[u'move4'].lower()) \
             if u'move4' in i_poke \
-            and i_poke[u'move3'] \
+            and i_poke[u'move4'] \
             else None
         poke.level = i_poke[u'level']
         poke.happiness = i_poke[u'happiness']
@@ -51,10 +51,10 @@ def load(fp, buff):
 def dump(fp, buff):
     exportedPokes = [
         {'species': poke.species,
-         'move1': poke.moveOne,
-         'move2': poke.moveTwo,
-         'move3': poke.moveThree,
-         'move4': poke.moveFour,
+         'move1': poke.moves[0],
+         'move2': poke.moves[1],
+         'move3': poke.moves[2],
+         'move4': poke.moves[3],
          'level': poke.level,
          'happiness': poke.happiness,
          'attackDv': poke.attackDv,

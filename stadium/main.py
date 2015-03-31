@@ -1,4 +1,4 @@
-import functools
+from functools import partial
 import urwid
 import ui
 import maps
@@ -17,7 +17,9 @@ class MainWidget(urwidgets.CommandFrame):
             'import': self.import_json,
             'export': self.export_json,
             'max': self.maxPokemon,
+            'max!': partial(self.maxPokemon, overwrite=True)
             'maxall': self.maxAllPokemon
+            'maxall!': partial(self.maxAllPokemon, overwrite=True)
         }
 
         self.last_search = None
@@ -412,11 +414,11 @@ class MainWidget(urwidgets.CommandFrame):
         self.moveList.keymap['enter'] = lambda x: moves_set_move()
         self.moveList.keymap['j'] = self.moveList.shiftDown
         self.moveList.keymap['k'] = self.moveList.shiftUp
-        self.moveList.keymap['J'] = functools.partial(
+        self.moveList.keymap['J'] = partial(
             self.moveList.shiftDown,
             amount=10
         )
-        self.moveList.keymap['K'] = functools.partial(
+        self.moveList.keymap['K'] = partial(
             self.moveList.shiftUp,
             amount=10
         )
@@ -429,11 +431,11 @@ class MainWidget(urwidgets.CommandFrame):
 
         self.pokeList.keymap['j'] = self.pokeList.shiftDown
         self.pokeList.keymap['k'] = self.pokeList.shiftUp
-        self.pokeList.keymap['J'] = functools.partial(
+        self.pokeList.keymap['J'] = partial(
             self.pokeList.shiftDown,
             amount=10
         )
-        self.pokeList.keymap['K'] = functools.partial(
+        self.pokeList.keymap['K'] = partial(
             self.pokeList.shiftUp,
             amount=10
         )
@@ -557,15 +559,25 @@ class MainWidget(urwidgets.CommandFrame):
         poke = self.currentPokemon
         self.hp_dv_meter.set_completion(poke.hpDv)
 
-    def maxPokemon(self):
+    def maxPokemon(self, overwite=False):
         poke = self.currentPokemon
+        h_type = poke.hiddenPowerType
         poke.max()
         self.updateCenterColumn()
         self.updateHpDv()
+        if not overwrite:
+            poke.hiddenPowerType = h_type
 
-    def maxAllPokemon(self):
-        for pokemon in self.pokemon:
-            pokemon.max()
+    def maxAllPokemon(self, overwrite=False):
+        if not overwrite:
+            for pokemon in self.pokemon:
+                pokemon.max()
+        else:
+            for pokemon in self.pokemon:
+                h_type = pokemon.hiddenPowerType
+                pokemon.max()
+                pokemon.hiddenPowerType = h_type
+            
         self.updateCenterColumn()
         self.updateHpDv()
 
