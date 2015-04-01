@@ -469,6 +469,7 @@ class MainWidget(urwidgets.CommandFrame):
             raise urwid.ExitMainLoop()
 
     def write(self, fname=None):
+        fname = fname if fname else self.buff.fname
         with open(fname, 'wb') as fp:
             self.buff.write(fp)
 
