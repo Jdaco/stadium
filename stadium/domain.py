@@ -81,6 +81,7 @@ class Moveset(object):
             for i in xrange(0, 4)
         )
 
+
 class Pokemon(object):
     _level = 0
     _species = 1

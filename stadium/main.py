@@ -42,7 +42,9 @@ class MainWidget(urwidgets.CommandFrame):
 
         self.pokemonWidgets = [
             urwidgets.MappedText(
-                poke.species.capitalize(), 'item', 'item_focus',
+                poke.species.capitalize(), 
+                attrmap='item', 
+                focusmap='item_focus',
                 keymap={'enter': enter_species}
             )
             for poke in self.pokemon
@@ -60,7 +62,11 @@ class MainWidget(urwidgets.CommandFrame):
         ] + moves[hpIndex+1:]
 
         self.moveWidgets = [
-            urwidgets.MappedText(utility.capWord(move), 'item', 'item_focus')
+            urwidgets.MappedText(
+                utility.capWord(move),
+                attrmap='item',
+                focusmap='item_focus'
+            )
             for move in self.moves
         ]
         self.moveList = urwidgets.MappedList(
@@ -73,22 +79,22 @@ class MainWidget(urwidgets.CommandFrame):
         )
 
         self.baseHp = ui.LeftRightWidget("HP: ", "Test",
-                                         attrmap='base', mapfocus='base',
+                                         attrmap='base', focusmap='base',
                                          selectable=False)
         self.baseAtt = ui.LeftRightWidget("Attack: ", "Test",
-                                          attrmap='base', mapfocus='base',
+                                          attrmap='base', focusmap='base',
                                           selectable=False)
         self.baseDef = ui.LeftRightWidget("Defense: ", "Test",
-                                          attrmap='base', mapfocus='base',
+                                          attrmap='base', focusmap='base',
                                           selectable=False)
         self.baseSatt = ui.LeftRightWidget("Special Attack: ", "Test",
-                                           attrmap='base', mapfocus='base',
+                                           attrmap='base', focusmap='base',
                                            selectable=False)
         self.baseSdef = ui.LeftRightWidget("Special Defense: ", "Test",
-                                           attrmap='base', mapfocus='base',
+                                           attrmap='base', focusmap='base',
                                            selectable=False)
         self.baseSpeed = ui.LeftRightWidget("Speed: ", "Test",
-                                            attrmap='base', mapfocus='base',
+                                            attrmap='base', focusmap='base',
                                             selectable=False)
 
         self.basePile = urwidgets.MappedPile([
@@ -586,7 +592,9 @@ class MainWidget(urwidgets.CommandFrame):
 
         self.pokeList.set([
             urwidgets.MappedText(
-                poke.species.capitalize(), 'item', 'item_focus',
+                poke.species.capitalize(),
+                attrmap='item',
+                focusmap='item_focus',
                 keymap={'enter': enter_species})
             for poke in self.pokemon
         ])
@@ -718,7 +726,8 @@ class MainWidget(urwidgets.CommandFrame):
                 'Hidden Power(%s)' % poke.hiddenPowerType
                 if move == 'hidden power'
                 else utility.capWord(move),
-                'item', 'item_focus'
+                attrmap='item',
+                focusmap='item_focus'
             )
             for move in poke.moves
         ]

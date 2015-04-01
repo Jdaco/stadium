@@ -9,64 +9,66 @@ import functools
 import itertools
 
 
-class MappedEdit(urwid.Edit):
-    def __init__(self, keymap={}, *args, **kwargs):
+class MappedWrap(urwid.AttrMap):
+    def __init__(self, widget,
+                 attrmap=None, focusmap=None,
+                 keymap={}, selectable=True,
+                 *args, **kwargs):
+        self.widget = widget
         self.keymap = dict(keymap)
-        super(MappedEdit, self).__init__(*args, **kwargs)
+        self._s = selectable
+
+        super(MappedWrap, self).__init__(widget, attrmap, focusmap, *args, **kwargs)
+
+    def __getattr__(self, name):
+        return getattr(self.widget, name)
+
+    def __setattribute__(self, name, value):
+        return setattr(self.widget, name, value)
 
     def keypress(self, size, key):
-        key = super(MappedEdit, self).keypress(size, key)
+        key = self.widget.keypress(size, key)
         if key in self.keymap:
             key = self.keymap[key]()
         return key
-        
-class MappedText(urwid.WidgetWrap):
-    def __init__(self, text,
-                 attrmap=None, mapfocus=None, keymap={},
-                 selectable=True,
-                 *args, **kwargs):
-        self.keymap = dict(keymap)
-        self.textWidget = urwid.Text(text, **kwargs)
-        self.mappedWidget = urwid.AttrMap(self.textWidget, attrmap, mapfocus)
-        self._s = selectable
-        super(MappedText, self).__init__(self.mappedWidget)
+
+    def selectable(self):
+        return self._s
 
     @property
     def attrmap(self):
-        pass
+        return self.attr_map
 
     @attrmap.setter
     def attrmap(self, value):
-        self.mappedWidget.set_attr_map({None: value})
+        self.set_attr_map(value)
 
     @property
-    def mapfocus(self):
-        pass
+    def focusmap(self):
+        return self.focus_map
 
-    @mapfocus.setter
-    def mapfocus(self, value):
-        self.mappedWidget.set_focus_map({None: value})
+    @focusmap.setter
+    def focusmap(self, value):
+        self.set_focus_map(value)
+
+
+class MappedText(MappedWrap):
+    def __init__(self, text, layout=None,
+                 *args, **kwargs):
+        self.textWidget = urwid.Text(text, layout=layout)
+        super(MappedText, self).__init__(self.textWidget, *args, **kwargs)
+
+    def keypress(self, size, key):
+        if key in self.keymap:
+            key = self.keymap[key]()
+        return key
 
     @property
     def text(self):
         return self.textWidget.text
 
-    def selectable(self):
-        return self._s
-
-    def set_selectable(self, val):
-        self._s = val
-
-    def keypress(self, size, key):
-        if key in self.keymap:
-            key = self.keymap[key]()
-        return key
-
     def set_text(self, text):
         self.textWidget.set_text(text)
-
-    def set_attr_map(self, m):
-        self.mappedWidget.set_attr_map(m)
 
 
 class CommandFrame(urwid.Frame):
@@ -77,7 +79,8 @@ class CommandFrame(urwid.Frame):
     keymap = {}
 
     def __init__(self, body=None, header=None, focus_part='body'):
-        self.edit = MappedEdit(multiline=False)
+        edit = urwid.Edit(multiline=False)
+        self.edit = MappedWrap(edit)
         self.functions = dict(self.functions)
         keymap = dict(self.keymap)
 
@@ -133,6 +136,7 @@ class CommandFrame(urwid.Frame):
         
     def changeStatus(self, stat):
         self.footer = urwid.Text(stat)
+
 
 class MappedList(urwid.ListBox):
     def __init__(self, widgets=[], keymap={}, shiftFunc=None):
@@ -192,7 +196,6 @@ class MappedList(urwid.ListBox):
             if predicate(self.body[index]):
                 return index if index >= 0 else total + index
         return -1
-
 
 
 class MappedPile(urwid.Pile):

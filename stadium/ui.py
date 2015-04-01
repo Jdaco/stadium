@@ -24,7 +24,11 @@ class LeftRightWidget(urwidgets.MappedText):
         self.right_string = right_string
         self.lay = LeftRightLayout(left_string, right_string)
 
-        super(LeftRightWidget, self).__init__(left_string + right_string, layout=self.lay, *args, **kwargs)
+        super(LeftRightWidget, self).__init__(
+            left_string + right_string,
+            self.lay,
+            *args, **kwargs
+        )
 
     def setRight(self, string):
         self.lay.setRight(string)
