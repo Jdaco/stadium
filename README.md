@@ -1,6 +1,23 @@
 #Stadium
 A tool for modifying the rental set of Pokemon Stadium 2 N64 ROMs
 
+##Usage
+    $ ./stadium.py -h
+    usage: stadium.py [-h] [-i IMPORTED] [-e EXPORTED] [-o OUTPUT] rom
+
+    positional arguments:
+        rom                   Pokemon Stadium 2 ROM file to read from
+
+    optional arguments:
+      -h, --help            show this help message and exit
+      -i IMPORTED, --import IMPORTED
+                        JSON file containing rental information
+      -e EXPORTED, --export EXPORTED
+                        JSON file to export ROM info to
+      -o OUTPUT, --output OUTPUT
+                        Write modified rom into new file
+If the -o or -e flags are specified, the program exits after writing the file
+
 ##Keys
  - `q` - Quit
  - `:` - Ex mode
