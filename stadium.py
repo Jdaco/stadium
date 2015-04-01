@@ -45,6 +45,7 @@ if __name__ == "__main__":
             ("progress_blue", '', '', '', 'dark blue', 'dark blue'),
             ("progress_cyan", '', '', '', 'dark cyan', 'dark cyan'),
             ("base", '', '', '', 'g75', 'g4'),
+            ("buffername", '', '', '', 'dark red', 'g4'),
             ]
         frame = stadium.main.MainWidget(rom)
         loop = urwid.MainLoop(frame, palette)

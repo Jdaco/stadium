@@ -461,7 +461,12 @@ class MainWidget(urwidgets.CommandFrame):
         ])
 
         self.updateCenterColumn()
-        super(MainWidget, self).__init__(self.columns)
+
+        fname_widget = urwid.AttrMap(
+            urwid.Text('%s\n' % self.buff.fname, align='center'),
+            'buffername', 'buffername',
+        )
+        super(MainWidget, self).__init__(self.columns, header=fname_widget)
 
     def edit_file(self, fname, discard=False):
         if self.buff.dirty and not discard:
@@ -470,9 +475,14 @@ class MainWidget(urwidgets.CommandFrame):
             try:
                 with open(fname, 'rb') as fp:
                     self.buff = domain.ROMBuffer(fp)
-                    self.pokemon = tuple(self.buff.pokemon)
-                    self.updateLeftColumn()
-                    self.updateCenterColumn()
+                self.pokemon = tuple(self.buff.pokemon)
+                self.updateLeftColumn()
+                self.updateCenterColumn()
+                fname_widget = urwid.AttrMap(
+                    urwid.Text('%s\n' % self.buff.fname, align='center'),
+                    'buffername', 'buffername',
+                )
+                self.header = fname_widget
             except IOError:
                 self.changeStatus('File not found')
         
