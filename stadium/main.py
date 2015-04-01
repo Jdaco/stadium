@@ -7,13 +7,13 @@ import urwidgets
 import utility
 import mappers
 
-def unhandled(key):
-    if key in ('q', 'Q'):
-        raise urwid.ExitMainLoop()
-
 class MainWidget(urwidgets.CommandFrame):
     def __init__(self, buff):
         self.functions = {
+            'quit': self.quit,
+            'quit!': None,
+            'edit': None,
+            'edit!': None,
             'write': self.write,
             'import': self.import_json,
             'export': self.export_json,
@@ -461,6 +461,12 @@ class MainWidget(urwidgets.CommandFrame):
 
         self.updateCenterColumn()
         super(MainWidget, self).__init__(self.columns)
+
+    def quit(self):
+        if self.buff.dirty:
+            self.changeStatus('No write since last change (add ! to override)')
+        else:
+            raise urwid.ExitMainLoop()
 
     def write(self, fname=None):
         with open(fname, 'wb') as fp:

@@ -16,6 +16,7 @@ class ROMBuffer(object):
     def __init__(self, fp):
         self.fname = fp.name
         self.binary = bytearray(fp.read())
+        self.dirty = False
 
     def baseStats(self, species):
         index = self._base + 22 * (maps.pokemon[species] - 1)
@@ -37,12 +38,14 @@ class ROMBuffer(object):
 
     def write(self, fp):
         fp.write(self.binary)
+        self.dirty = False
 
     def __getitem__(self, index):
         return self.binary[index]
 
     def __setitem__(self, index, value):
         self.binary[index] = value
+        self.dirty = True
 
 
 class Moveset(object):

@@ -47,6 +47,6 @@ if __name__ == "__main__":
             ("base", '', '', '', 'g75', 'g4'),
             ]
         frame = stadium.main.MainWidget(rom)
-        loop = urwid.MainLoop(frame, palette, unhandled_input=stadium.main.unhandled)
+        loop = urwid.MainLoop(frame, palette)
         loop.screen.set_terminal_properties(colors=256)
         loop.run()
