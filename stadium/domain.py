@@ -16,8 +16,6 @@ class ROMBuffer(object):
     def __init__(self, fp):
         self.fname = fp.name
         self.binary = bytearray(fp.read())
-        fp.close()
-
 
     def baseStats(self, species):
         index = self._base + 22 * (maps.pokemon[species] - 1)
@@ -37,10 +35,8 @@ class ROMBuffer(object):
             Pokemon(self, i) for i in xrange(self._rentalStart, self._rentalStart + 246 * 24, 24)
         )
 
-    def write(self, fname=None):
-        fname = self.fname if not fname else fname
-        with open(fname, 'wb') as fp:
-            fp.write(self.binary)
+    def write(self, fp):
+        fp.write(self.binary)
 
     def __getitem__(self, index):
         return self.binary[index]

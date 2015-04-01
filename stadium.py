@@ -13,17 +13,26 @@ if __name__ == "__main__":
                         type=argparse.FileType('w'),
                         dest="exported",
                         help="JSON file to export ROM info to")
+    parser.add_argument('-o', '--output',
+                        type=argparse.FileType('wb'),
+                        help="Write modified rom into new file")
     parser.add_argument('rom',
                         type=argparse.FileType('rb'),
                         help="Pokemon Stadium 2 ROM file to read from")
     args = parser.parse_args()
     
     rom = ROMBuffer(args.rom)
+    args.rom.close()
     if args.imported:
         mappers.json.load(args.imported, rom)
+        args.imported.close()
     if args.exported:
         mappers.json.dump(args.exported, rom)
-    else:
+        args.exported.close()
+    if args.output:
+        rom.write(args.output)
+        args.output.close()
+    if not args.output and not args.exported:
         import stadium.main
         import urwid
         palette = [

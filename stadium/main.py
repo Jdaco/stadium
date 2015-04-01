@@ -5,6 +5,7 @@ import maps
 import domain
 import urwidgets
 import utility
+import mappers
 
 def unhandled(key):
     if key in ('q', 'Q'):
@@ -462,17 +463,21 @@ class MainWidget(urwidgets.CommandFrame):
         super(MainWidget, self).__init__(self.columns)
 
     def write(self, fname=None):
-        self.buff.write(fname)
+        with open(fname, 'wb') as fp:
+            self.buff.write(fp)
 
     def import_json(self, fname):
-        #import_code_here
+        try:
+            with open(fname, 'r') as fp:
+                mappers.json.load(fp, self.buff)
+        except IOError:
+            self.changeStatus('File not found')
         self.updateCenterColumn()
         self.updateLeftColumn()
 
     def export_json(self, fname):
-        #export_code_here
-        #needs_some_indicator_as_well
-        pass
+        with open(fname, 'w') as fp:
+            mappers.json.dump(fp, self.buff)
 
     def inc_search(self, query, start=0, direction='forward'):
         current_list = self.columns.focus

@@ -114,7 +114,6 @@ class CommandFrame(urwid.Frame):
     def stopEditing(self):
         self.edit.set_caption('')
         self.edit.set_edit_text('')
-        self.footer = None
         self.focus_position = 'body'
 
     def startEditing(self, caption='> ', startText='', callback=None):
