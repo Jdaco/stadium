@@ -11,9 +11,9 @@ class MainWidget(urwidgets.CommandFrame):
     def __init__(self, buff):
         self.functions = {
             'quit': self.quit,
-            'quit!': None,
-            'edit': None,
-            'edit!': None,
+            'quit!': partial(self.quit, discard=True),
+            'edit': self.edit_file,
+            'edit!': partial(self.edit_file, discard=True),
             'write': self.write,
             'import': self.import_json,
             'export': self.export_json,
@@ -462,8 +462,21 @@ class MainWidget(urwidgets.CommandFrame):
         self.updateCenterColumn()
         super(MainWidget, self).__init__(self.columns)
 
-    def quit(self):
-        if self.buff.dirty:
+    def edit_file(self, fname, discard=False):
+        if self.buff.dirty and not discard:
+            self.changeStatus('No write since last change (add ! to override)')
+        else:
+            try:
+                with open(fname, 'rb') as fp:
+                    self.buff = domain.ROMBuffer(fp)
+                    self.pokemon = tuple(self.buff.pokemon)
+                    self.updateLeftColumn()
+                    self.updateCenterColumn()
+            except IOError:
+                self.changeStatus('File not found')
+        
+    def quit(self, discard=False):
+        if self.buff.dirty and not discard:
             self.changeStatus('No write since last change (add ! to override)')
         else:
             raise urwid.ExitMainLoop()

@@ -64,7 +64,7 @@ class Moveset(object):
     def __getitem__(self, index):
         if index > 3 or index < 0:
             raise ValueError("Invalid index")
-        byte = self.buff.binary[self.addr + index]
+        byte = self.buff[self.addr + index]
         if byte == 0:
             return None
         return maps.moves_reversed[byte]
@@ -73,7 +73,7 @@ class Moveset(object):
         if index > 3 or index < 0:
             raise ValueError("Invalid index")
         move = maps.moves[value.lower()] if value is not None else 0
-        self.buff.binary[self.addr + index] = move
+        self.buff[self.addr + index] = move
 
     def __iter__(self):
         return (

@@ -71,7 +71,7 @@ class MappedText(urwid.WidgetWrap):
 
 class CommandFrame(urwid.Frame):
     argument = pp.Or((pp.Word(pp.printables), pp.QuotedString("'")))
-    command = pp.Word(pp.alphas)
+    command = pp.Word(pp.printables)
     commandLine = command + pp.ZeroOrMore(argument)
     functions = {}
     keymap = {}
