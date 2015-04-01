@@ -78,7 +78,7 @@ class CommandFrame(urwid.Frame):
 
     def __init__(self, body=None, header=None, focus_part='body'):
         self.edit = MappedEdit(multiline=False)
-        functions = dict(self.functions)
+        self.functions = dict(self.functions)
         keymap = dict(self.keymap)
 
         self.keymap[':'] = functools.partial(self.startEditing, callback=self.submitCommand)

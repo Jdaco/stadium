@@ -10,6 +10,7 @@ import mappers
 class MainWidget(urwidgets.CommandFrame):
     def __init__(self, buff):
         self.functions = {
+            'wq': utility.chain(self.write, self.quit),
             'quit': self.quit,
             'quit!': partial(self.quit, discard=True),
             'edit': self.edit_file,
