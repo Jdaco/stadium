@@ -19,7 +19,6 @@ A tool for modifying the rental set of Pokemon Stadium 2 N64 ROMs
 If the -o or -e flags are specified, the program exits after writing the file
 
 ##Keys
- - `q` - Quit
  - `:` - Ex mode
  - `esc` - Cancel command
  - `enter` - Submit Command
@@ -41,6 +40,8 @@ If the -o or -e flags are specified, the program exits after writing the file
  - `enter` - Select move
 
 ##Commands
+ - `quit[!]` - Quit the program (add `!` to discard changes) 
+ - `edit[!] filename` - Edit anothe rom file (add `!` to discard changes)
  - `write [filename]` - Write to the current file (or optional filename)
  - `import [filename]` - import data from json file
  - `export [filename]` - export data to json file
