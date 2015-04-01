@@ -1,3 +1,4 @@
+from collections import OrderedDict
 import itertools
 import json
 from stadium import maps
@@ -33,20 +34,21 @@ def load(fp, buff):
 
 def dump(fp, buff):
     exportedPokes = [
-        {'species': poke.species,
-         'moves': list(poke.moves),
-         'level': poke.level,
-         'happiness': poke.happiness,
-         'attackDv': poke.attackDv,
-         'defenseDv': poke.defenseDv,
-         'speedDv': poke.speedDv,
-         'specialDv': poke.specialDv,
-         'attackExp': poke.attackExp,
-         'defenseExp': poke.defenseExp,
-         'speedExp': poke.speedExp,
-         'specialExp': poke.specialExp,
-         'hpExp': poke.hpExp}
-
+        OrderedDict((
+            ('species', poke.species),
+            ('moves', list(poke.moves)),
+            ('level', poke.level),
+            ('happiness', poke.happiness),
+            ('attackDv', poke.attackDv),
+            ('defenseDv', poke.defenseDv),
+            ('speedDv', poke.speedDv),
+            ('specialDv', poke.specialDv),
+            ('attackExp', poke.attackExp),
+            ('defenseExp', poke.defenseExp),
+            ('speedExp', poke.speedExp),
+            ('specialExp', poke.specialExp),
+            ('hpExp', poke.hpExp)
+        ))
         for poke in buff.pokemon
     ]
     json.dump(exportedPokes, fp, indent=4)
