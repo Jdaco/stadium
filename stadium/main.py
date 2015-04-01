@@ -463,6 +463,7 @@ class MainWidget(urwidgets.CommandFrame):
         super(MainWidget, self).__init__(self.columns)
 
     def write(self, fname=None):
+        fname = fname if fname else self.buff.fname
         with open(fname, 'wb') as fp:
             self.buff.write(fp)
 
