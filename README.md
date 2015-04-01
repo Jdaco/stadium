@@ -40,6 +40,7 @@ If the -o or -e flags are specified, the program exits after writing the file
  - `enter` - Select move
 
 ##Commands
+ - `wq` - Write to current file and quit
  - `quit[!]` - Quit the program (add `!` to discard changes) 
  - `edit[!] filename` - Edit anothe rom file (add `!` to discard changes)
  - `write [filename]` - Write to the current file (or optional filename)
