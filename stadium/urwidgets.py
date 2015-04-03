@@ -1,11 +1,13 @@
 #!/usr/bin/python2
-import urwid
 import sys
-import inspect
-import pyparsing as pp
 import itertools
-import utility
 import functools
+import traceback
+import urwid
+import pyparsing as pp
+import utility
+import re
+
 
 
 class MappedWrap(urwid.AttrMap):
@@ -53,9 +55,11 @@ class MappedWrap(urwid.AttrMap):
 
 
 class CommandFrame(urwid.Frame):
-    argument = pp.Or((pp.Word(pp.printables), pp.QuotedString("'")))
-    command = pp.Word(pp.printables)
-    commandLine = command + pp.ZeroOrMore(argument)
+    argument_regex = r"(?:'[^']*'|\"[^\"]*\"|[^\s'\"]+)"
+    command_regex = r'(?P<command>[^\s\'"]+)(?P<arguments>(?:\s+%s)*)' % argument_regex
+    # argument = pp.Or((pp.Word(pp.printables), pp.QuotedString("'")))
+    # command = pp.Word(pp.printables)
+    # commandLine = command + pp.ZeroOrMore(argument)
 
     def __init__(self, body, header=None, focus_part='body'):
         command_line = urwid.Edit(multiline=False)
@@ -68,7 +72,7 @@ class CommandFrame(urwid.Frame):
 
         self.keymap[':'] = functools.partial(self.start_editing, callback=self.submit_command)
 
-        urwid.Frame.__init__(self, body, header, self.command_line, focus_part)
+        super(CommandFrame, self).__init__(body, header, self.command_line, focus_part)
 
     def keypress(self, size, key):
         key = urwid.Frame.keypress(self, size, key)
@@ -76,18 +80,38 @@ class CommandFrame(urwid.Frame):
             self.keymap[key]()
         return key
 
+    def _split_command(self, command):
+        match = re.match(self.command_regex, command)
+        if match is None:
+            return None
+        arguments = [
+            arg.strip('"\' ')
+            for arg in
+            re.findall(self.argument_regex, match.group('arguments'))
+        ]
+        return (
+            match.group('command'),
+            arguments,
+        )
+        
     def submit_command(self, data):
-        arguments = CommandFrame.commandLine.parseString(data).asList()
-        func = arguments.pop(0)
+        parse_result = self._split_command(data)
+        # arguments = CommandFrame.commandLine.parseString(data).asList()
+        if parse_result is None:
+            self.change_status("Invalid command")
+        func, args = parse_result
         if func not in self.commands:
             self.change_status("Command not found")
         else:
-            func_spec = inspect.getargspec(self.commands[func])
-            num_args = len(func_spec.args) - len(func_spec.defaults) - int(inspect.ismethod(func_spec))
-            if num_args > len(arguments) and not func_spec.varargs:
-                self.change_status("Wrong number of arguments")
-            else:
-                self.commands[func](*arguments)
+            try:   
+                self.commands[func](*args)
+            except TypeError:
+                # Too many arguments
+                tb = traceback.extract_tb(sys.exc_info()[2])
+                if len(tb) == 1:
+                    self.changeStatus("Wrong number of arguments")
+                else:
+                    raise
 
     def stop_editing(self):
         self.command_line.set_caption('')
@@ -97,6 +121,7 @@ class CommandFrame(urwid.Frame):
     def start_editing(self, caption='> ', startText='', callback=None):
         self.command_line.set_caption(caption)
         self.command_line.set_edit_text(startText)
+        self.footer = self.command_line
         self.focus_position = "footer"
         callback = self.submitCommand if callback is None else callback
 
