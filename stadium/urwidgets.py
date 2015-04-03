@@ -1,12 +1,11 @@
 #!/usr/bin/python2
 import urwid
 import sys
-import traceback
+import inspect
 import pyparsing as pp
 import itertools
 import utility
 import functools
-import itertools
 
 
 class MappedWrap(urwid.AttrMap):
@@ -14,20 +13,21 @@ class MappedWrap(urwid.AttrMap):
                  attrmap=None, focusmap=None,
                  keymap={}, selectable=True,
                  *args, **kwargs):
-        self.widget = widget
+        self._widget = widget
         self.keymap = dict(keymap)
         self._s = selectable
 
         super(MappedWrap, self).__init__(widget, attrmap, focusmap, *args, **kwargs)
 
     def __getattr__(self, name):
-        return getattr(self.widget, name)
+        return getattr(self._widget, name)
 
     def __setattribute__(self, name, value):
-        return setattr(self.widget, name, value)
+        return setattr(self._widget, name, value)
 
     def keypress(self, size, key):
-        key = self.widget.keypress(size, key)
+        if hasattr(self._widget, 'keypress'):
+            key = self._widget.keypress(size, key)
         if key in self.keymap:
             key = self.keymap[key]()
         return key
@@ -52,41 +52,23 @@ class MappedWrap(urwid.AttrMap):
         self.set_focus_map(value)
 
 
-class MappedText(MappedWrap):
-    def __init__(self, text, layout=None,
-                 *args, **kwargs):
-        self.textWidget = urwid.Text(text, layout=layout)
-        super(MappedText, self).__init__(self.textWidget, *args, **kwargs)
-
-    def keypress(self, size, key):
-        if key in self.keymap:
-            key = self.keymap[key]()
-        return key
-
-    @property
-    def text(self):
-        return self.textWidget.text
-
-    def set_text(self, text):
-        self.textWidget.set_text(text)
-
-
 class CommandFrame(urwid.Frame):
     argument = pp.Or((pp.Word(pp.printables), pp.QuotedString("'")))
     command = pp.Word(pp.printables)
     commandLine = command + pp.ZeroOrMore(argument)
-    functions = {}
-    keymap = {}
 
-    def __init__(self, body=None, header=None, focus_part='body'):
-        edit = urwid.Edit(multiline=False)
-        self.edit = MappedWrap(edit)
-        self.functions = dict(self.functions)
-        keymap = dict(self.keymap)
+    def __init__(self, body, header=None, focus_part='body'):
+        command_line = urwid.Edit(multiline=False)
+        self.command_line = MappedWrap(command_line)
 
-        self.keymap[':'] = functools.partial(self.startEditing, callback=self.submitCommand)
+        if not hasattr(self, 'keymap'):
+            self.keymap = {}
+        if not hasattr(self, 'commands'):
+            self.commands = {}
 
-        urwid.Frame.__init__(self, body, header, self.edit, focus_part)
+        self.keymap[':'] = functools.partial(self.start_editing, callback=self.submit_command)
+
+        urwid.Frame.__init__(self, body, header, self.command_line, focus_part)
 
     def keypress(self, size, key):
         key = urwid.Frame.keypress(self, size, key)
@@ -94,47 +76,39 @@ class CommandFrame(urwid.Frame):
             self.keymap[key]()
         return key
 
-    def submitCommand(self, data):
+    def submit_command(self, data):
         arguments = CommandFrame.commandLine.parseString(data).asList()
-        function = arguments.pop(0)
-        try:
-            self.functions[function](*arguments)
-        except TypeError:
-            # Too many arguments
-            tb = traceback.extract_tb(sys.exc_info()[2])
-            if len(tb) == 1:
-                self.changeStatus("Wrong number of arguments")
+        func = arguments.pop(0)
+        if func not in self.commands:
+            self.change_status("Command not found")
+        else:
+            func_spec = inspect.getargspec(self.commands[func])
+            num_args = len(func_spec.args) - len(func_spec.defaults) - int(inspect.ismethod(func_spec))
+            if num_args > len(arguments) and not func_spec.varargs:
+                self.change_status("Wrong number of arguments")
             else:
-                raise
-        except KeyError:
-            # Command not found
-            tb = traceback.extract_tb(sys.exc_info()[2])
-            if len(tb) == 1:
-                self.changeStatus("Command not found")
-            else:
-                raise
+                self.commands[func](*arguments)
 
-    def stopEditing(self):
-        self.edit.set_caption('')
-        self.edit.set_edit_text('')
+    def stop_editing(self):
+        self.command_line.set_caption('')
+        self.command_line.set_edit_text('')
         self.focus_position = 'body'
 
-    def startEditing(self, caption='> ', startText='', callback=None):
-        self.edit.set_caption(caption)
-        self.edit.set_edit_text(startText)
-        self.footer = self.edit
+    def start_editing(self, caption='> ', startText='', callback=None):
+        self.command_line.set_caption(caption)
+        self.command_line.set_edit_text(startText)
         self.focus_position = "footer"
         callback = self.submitCommand if callback is None else callback
 
         def enter_command():
-            t = self.edit.edit_text
-            self.stopEditing()
+            t = self.command_line.edit_text
+            self.stop_editing()
             callback(t)
 
-        self.edit.keymap['esc'] = self.stopEditing
-        self.edit.keymap['enter'] = enter_command
+        self.command_line.keymap['esc'] = self.stop_editing
+        self.command_line.keymap['enter'] = enter_command
         
-    def changeStatus(self, stat):
+    def change_status(self, stat):
         self.footer = urwid.Text(stat)
 
 

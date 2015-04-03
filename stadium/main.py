@@ -9,7 +9,7 @@ import mappers
 
 class MainWidget(urwidgets.CommandFrame):
     def __init__(self, buff):
-        self.functions = {
+        self.commands = {
             'wq': utility.chain(self.write, self.quit),
             'quit': self.quit,
             'quit!': partial(self.quit, discard=True),
@@ -38,11 +38,11 @@ class MainWidget(urwidgets.CommandFrame):
         ])
 
         def enter_species():
-            self.startEditing(caption="Species: ", callback=self.setSpecies)
+            self.start_editing(caption="Species: ", callback=self.setSpecies)
 
         self.pokemonWidgets = [
-            urwidgets.MappedText(
-                poke.species.capitalize(), 
+            urwidgets.MappedWrap(
+                urwid.Text(poke.species.capitalize()),
                 attrmap='item', 
                 focusmap='item_focus',
                 keymap={'enter': enter_species}
@@ -62,8 +62,8 @@ class MainWidget(urwidgets.CommandFrame):
         ] + moves[hpIndex+1:]
 
         self.moveWidgets = [
-            urwidgets.MappedText(
-                utility.capWord(move),
+            urwidgets.MappedWrap(
+                urwid.Text(utility.capWord(move)),
                 attrmap='item',
                 focusmap='item_focus'
             )
@@ -291,7 +291,7 @@ class MainWidget(urwidgets.CommandFrame):
             # for canceling
             def stop_searching():
                 current_list.focus.attrmap = 'item'
-                urwid.disconnect_signal(self.edit, 'change', handler)
+                urwid.disconnect_signal(self.comand_line, 'change', handler)
                 current_list.set_focus(current_pos)
 
             # for submitting
@@ -300,15 +300,15 @@ class MainWidget(urwidgets.CommandFrame):
                 self.search(text, start=current_pos, direction=direction)
 
             caption = '/' if direction == 'forward' else '?'
-            self.startEditing(caption=caption, callback=exit_handler)
-            urwid.connect_signal(self.edit, 'change', handler)
-            self.edit.keymap['esc'] = utility.chain(
+            self.start_editing(caption=caption, callback=exit_handler)
+            urwid.connect_signal(self.comand_line, 'change', handler)
+            self.comand_line.keymap['esc'] = utility.chain(
                 stop_searching,
-                self.edit.keymap['esc']
+                self.comand_line.keymap['esc']
             )
 
         self.level_meter.keymap['enter'] = (
-            lambda: self.startEditing(
+            lambda: self.start_editing(
                 caption='Level: ',
                 callback=set_bar_value(self.setLevel, self.level_meter)
             )
@@ -317,7 +317,7 @@ class MainWidget(urwidgets.CommandFrame):
         self.level_meter.keymap['<'] = self.level_meter.decrement
 
         self.happiness_meter.keymap['enter'] = (
-            lambda: self.startEditing(
+            lambda: self.start_editing(
                 caption='Happiness: ',
                 callback=set_bar_value(self.setHappiness, self.happiness_meter)
             )
@@ -326,7 +326,7 @@ class MainWidget(urwidgets.CommandFrame):
         self.happiness_meter.keymap['<'] = self.happiness_meter.decrement
 
         self.attack_exp_meter.keymap['enter'] = (
-            lambda: self.startEditing(
+            lambda: self.start_editing(
                 caption='Attack Exp: ',
                 callback=set_bar_value(
                     self.setAttackExp, self.attack_exp_meter
@@ -337,7 +337,7 @@ class MainWidget(urwidgets.CommandFrame):
         self.attack_exp_meter.keymap['<'] = self.attack_exp_meter.decrement
 
         self.hp_exp_meter.keymap['enter'] = (
-            lambda: self.startEditing(
+            lambda: self.start_editing(
                 caption='HP Exp: ',
                 callback=set_bar_value(self.setHpExp, self.hp_exp_meter)
             )
@@ -346,7 +346,7 @@ class MainWidget(urwidgets.CommandFrame):
         self.hp_exp_meter.keymap['<'] = self.hp_exp_meter.decrement
 
         self.defense_exp_meter.keymap['enter'] = (
-            lambda: self.startEditing(
+            lambda: self.start_editing(
                 caption='Defense Exp: ',
                 callback=set_bar_value(
                     self.setDefenseExp, self.defense_exp_meter
@@ -357,7 +357,7 @@ class MainWidget(urwidgets.CommandFrame):
         self.defense_exp_meter.keymap['<'] = self.defense_exp_meter.decrement
 
         self.speed_exp_meter.keymap['enter'] = (
-            lambda: self.startEditing(
+            lambda: self.start_editing(
                 caption='Speed Exp: ',
                 callback=set_bar_value(self.setSpeedExp, self.speed_exp_meter)
             )
@@ -366,7 +366,7 @@ class MainWidget(urwidgets.CommandFrame):
         self.speed_exp_meter.keymap['<'] = self.speed_exp_meter.decrement
 
         self.special_exp_meter.keymap['enter'] = (
-            lambda: self.startEditing(
+            lambda: self.start_editing(
                 caption='Special Exp: ',
                 callback=set_bar_value(
                     self.setSpecialExp, self.special_exp_meter
@@ -377,7 +377,7 @@ class MainWidget(urwidgets.CommandFrame):
         self.special_exp_meter.keymap['<'] = self.special_exp_meter.decrement
 
         self.attack_dv_meter.keymap['enter'] = (
-            lambda: self.startEditing(
+            lambda: self.start_editing(
                 caption='Attack DV: ',
                 callback=set_bar_value(self.setAttackDv, self.attack_dv_meter)
             )
@@ -386,7 +386,7 @@ class MainWidget(urwidgets.CommandFrame):
         self.attack_dv_meter.keymap['<'] = self.attack_dv_meter.decrement
 
         self.defense_dv_meter.keymap['enter'] = (
-            lambda: self.startEditing(
+            lambda: self.start_editing(
                 caption='Defense DV: ',
                 callback=set_bar_value(self.setDefenseDv, self.defense_dv_meter)
             )
@@ -395,7 +395,7 @@ class MainWidget(urwidgets.CommandFrame):
         self.defense_dv_meter.keymap['<'] = self.defense_dv_meter.decrement
 
         self.speed_dv_meter.keymap['enter'] = (
-            lambda: self.startEditing(
+            lambda: self.start_editing(
                 caption='Speed DV: ',
                 callback=set_bar_value(self.setSpeedDv, self.speed_dv_meter)
             )
@@ -404,7 +404,7 @@ class MainWidget(urwidgets.CommandFrame):
         self.speed_dv_meter.keymap['<'] = self.speed_dv_meter.decrement
 
         self.special_dv_meter.keymap['enter'] = (
-            lambda: self.startEditing(
+            lambda: self.start_editing(
                 caption='Special DV: ',
                 callback=set_bar_value(self.setSpecialDv, self.special_dv_meter)
             )
@@ -588,11 +588,11 @@ class MainWidget(urwidgets.CommandFrame):
 
     def updateLeftColumn(self):
         def enter_species():
-            self.startEditing(caption="Species: ", callback=self.setSpecies)
+            self.start_editing(caption="Species: ", callback=self.setSpecies)
 
         self.pokeList.set([
-            urwidgets.MappedText(
-                poke.species.capitalize(),
+            urwidgets.MappedWrap(
+                urwid.Text(poke.species.capitalize()),
                 attrmap='item',
                 focusmap='item_focus',
                 keymap={'enter': enter_species})
@@ -721,11 +721,13 @@ class MainWidget(urwidgets.CommandFrame):
     def currentMoves(self):
         poke = self.currentPokemon
         return [
-            urwidgets.MappedText(
-                '-----' if move is None else
-                'Hidden Power(%s)' % poke.hiddenPowerType
-                if move == 'hidden power'
-                else utility.capWord(move),
+            urwidgets.MappedWrap(
+                urwid.Text(
+                    '-----' if move is None else
+                    'Hidden Power(%s)' % poke.hiddenPowerType
+                    if move == 'hidden power'
+                    else utility.capWord(move)
+                ),
                 attrmap='item',
                 focusmap='item_focus'
             )

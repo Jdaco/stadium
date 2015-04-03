@@ -18,17 +18,14 @@ class LeftRightLayout(urwid.TextLayout):
         self.right = len(text)
 
 
-class LeftRightWidget(urwidgets.MappedText):
+class LeftRightWidget(urwidgets.MappedWrap):
     def __init__(self, left_string, right_string, *args, **kwargs):
         self.left_string = left_string
         self.right_string = right_string
         self.lay = LeftRightLayout(left_string, right_string)
+        self.textWidget = urwid.Text(left_string + right_string, layout=self.lay)
 
-        super(LeftRightWidget, self).__init__(
-            left_string + right_string,
-            self.lay,
-            *args, **kwargs
-        )
+        super(LeftRightWidget, self).__init__(self.textWidget, *args, **kwargs)
 
     def setRight(self, string):
         self.lay.setRight(string)
