@@ -9,6 +9,22 @@ import utility
 import re
 
 
+argument_regex = r"(?:'[^']*'|\"[^\"]*\"|[^\s'\"]+)"
+command_regex = r'(?P<command>[^\s\'"]+)(?P<arguments>(?:\s+%s)*)' % argument_regex
+
+def parse_command(command):
+        match = re.match(self.command_regex, command)
+        if match is None:
+            return None
+        arguments = [
+            arg.strip('"\' ')
+            for arg in
+            re.findall(self.argument_regex, match.group('arguments'))
+        ]
+        return (
+            match.group('command'),
+            arguments,
+        )
 
 class MappedWrap(urwid.AttrMap):
     def __init__(self, widget,
@@ -55,12 +71,6 @@ class MappedWrap(urwid.AttrMap):
 
 
 class CommandFrame(urwid.Frame):
-    argument_regex = r"(?:'[^']*'|\"[^\"]*\"|[^\s'\"]+)"
-    command_regex = r'(?P<command>[^\s\'"]+)(?P<arguments>(?:\s+%s)*)' % argument_regex
-    # argument = pp.Or((pp.Word(pp.printables), pp.QuotedString("'")))
-    # command = pp.Word(pp.printables)
-    # commandLine = command + pp.ZeroOrMore(argument)
-
     def __init__(self, body, header=None, focus_part='body'):
         command_line = urwid.Edit(multiline=False)
         self.command_line = MappedWrap(command_line)
@@ -80,23 +90,8 @@ class CommandFrame(urwid.Frame):
             self.keymap[key]()
         return key
 
-    def _split_command(self, command):
-        match = re.match(self.command_regex, command)
-        if match is None:
-            return None
-        arguments = [
-            arg.strip('"\' ')
-            for arg in
-            re.findall(self.argument_regex, match.group('arguments'))
-        ]
-        return (
-            match.group('command'),
-            arguments,
-        )
-        
     def submit_command(self, data):
-        parse_result = self._split_command(data)
-        # arguments = CommandFrame.commandLine.parseString(data).asList()
+        parse_result = parse_command(data)
         if parse_result is None:
             self.change_status("Invalid command")
         func, args = parse_result
