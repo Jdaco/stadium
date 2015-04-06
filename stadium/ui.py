@@ -18,8 +18,9 @@ class LeftRightLayout(urwid.TextLayout):
         self.right = len(text)
 
 
-class LeftRightWidget(urwidgets.MappedWrap):
-    def __init__(self, left_string, right_string, *args, **kwargs):
+class LeftRightWidget(urwid.WidgetWrap):
+    def __init__(self, left_string, right_string, 
+                 selectable=False, attrmap=None, focusmap=False, *args, **kwargs):
         self.left_string = left_string
         self.right_string = right_string
         self.lay = LeftRightLayout(left_string, right_string)

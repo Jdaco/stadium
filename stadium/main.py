@@ -51,8 +51,8 @@ class MainWidget(urwidgets.CommandFrame):
         ]
         self.pokeList = urwidgets.MappedList(
             urwid.SimpleFocusListWalker(self.pokemonWidgets),
-            shiftFunc=self.updateCenterColumn
         )
+        urwid.connect_signal(self.pokeList, 'shift', self.updateCenterColumn)
 
         hpIndex = moves.index('hidden power')
 
@@ -75,8 +75,8 @@ class MainWidget(urwidgets.CommandFrame):
 
         self.currentMoveList = urwidgets.MappedPile(
             self.currentMoves(),
-            hitBottom=self.centerShiftDown,
         )
+        urwid.connect_signal(self.currentMoveList, 'bottom', self.centerShiftDown)
 
         self.baseHp = ui.LeftRightWidget("HP: ", "Test",
                                          attrmap='base', focusmap='base',
@@ -278,20 +278,20 @@ class MainWidget(urwidgets.CommandFrame):
         def start_searching(direction):
             current_list = self.columns.focus
             current_pos = current_list.focus_position
-            current_list.body[current_pos].attrmap = 'item_focus'
+            current_list.body[current_pos].attrmap = {None: 'item_focus'}
 
             # handles keypresses
             def handler(widget, text):
                 w = current_list.focus
                 self.inc_search(text, start=current_pos, direction=direction)
                 if current_list.focus is not w:
-                    w.attrmap = 'item'
-                    current_list.focus.attrmap = 'item_focus'
+                    w.attrmap = {None: 'item'}
+                    current_list.focus.attrmap = {None: 'item_focus'}
 
             # for canceling
             def stop_searching():
-                current_list.focus.attrmap = 'item'
-                urwid.disconnect_signal(self.comand_line, 'change', handler)
+                current_list.focus.attrmap = {None: 'item'}
+                urwid.disconnect_signal(self.command_line, 'change', handler)
                 current_list.set_focus(current_pos)
 
             # for submitting
@@ -301,10 +301,10 @@ class MainWidget(urwidgets.CommandFrame):
 
             caption = '/' if direction == 'forward' else '?'
             self.start_editing(caption=caption, callback=exit_handler)
-            urwid.connect_signal(self.comand_line, 'change', handler)
-            self.comand_line.keymap['esc'] = utility.chain(
+            urwid.connect_signal(self.command_line, 'change', handler)
+            self.command_line.keymap['esc'] = utility.chain(
                 stop_searching,
-                self.comand_line.keymap['esc']
+                self.command_line.keymap['esc']
             )
 
         self.level_meter.keymap['enter'] = (
@@ -414,12 +414,12 @@ class MainWidget(urwidgets.CommandFrame):
 
         self.currentMoveList.keymap['j'] = self.currentMoveList.shiftDown
         self.currentMoveList.keymap['k'] = self.currentMoveList.shiftUp
-        self.pokeList.keymap['l'] = lambda x: poke_to_current()
+        self.pokeList.keymap['l'] = poke_to_current
         self.currentMoveList.keymap['l'] = current_to_moves
         self.currentMoveList.keymap['h'] = current_to_poke
 
-        self.moveList.keymap['h'] = lambda x: moves_to_current()
-        self.moveList.keymap['enter'] = lambda x: moves_set_move()
+        self.moveList.keymap['h'] = moves_to_current
+        self.moveList.keymap['enter'] = moves_set_move
         self.moveList.keymap['j'] = self.moveList.shiftDown
         self.moveList.keymap['k'] = self.moveList.shiftUp
         self.moveList.keymap['J'] = partial(
@@ -430,12 +430,12 @@ class MainWidget(urwidgets.CommandFrame):
             self.moveList.shiftUp,
             amount=10
         )
-        self.moveList.keymap['/'] = (lambda x: start_searching('forward'))
-        self.moveList.keymap['?'] = (lambda x: start_searching('backward'))
-        self.moveList.keymap['n'] = (lambda x: self.searchNext())
-        self.moveList.keymap['N'] = (lambda x: self.searchPrev())
-        self.moveList.keymap['g'] = (lambda x: self.moveList.top())
-        self.moveList.keymap['G'] = (lambda x: self.moveList.bottom())
+        self.moveList.keymap['/'] = lambda: start_searching('forward')
+        self.moveList.keymap['?'] = lambda: start_searching('backward')
+        self.moveList.keymap['n'] = self.searchNext
+        self.moveList.keymap['N'] = self.searchPrev
+        self.moveList.keymap['g'] = self.moveList.top
+        self.moveList.keymap['G'] = self.moveList.bottom
 
         self.pokeList.keymap['j'] = self.pokeList.shiftDown
         self.pokeList.keymap['k'] = self.pokeList.shiftUp
@@ -447,12 +447,12 @@ class MainWidget(urwidgets.CommandFrame):
             self.pokeList.shiftUp,
             amount=10
         )
-        self.pokeList.keymap['/'] = (lambda x: start_searching('forward'))
-        self.pokeList.keymap['?'] = (lambda x: start_searching('backward'))
-        self.pokeList.keymap['n'] = (lambda x: self.searchNext())
-        self.pokeList.keymap['N'] = (lambda x: self.searchPrev())
-        self.pokeList.keymap['g'] = (lambda x: self.pokeList.top())
-        self.pokeList.keymap['G'] = (lambda x: self.pokeList.bottom())
+        self.pokeList.keymap['/'] = lambda: start_searching('forward')
+        self.pokeList.keymap['?'] = lambda: start_searching('backward')
+        self.pokeList.keymap['n'] = self.searchNext
+        self.pokeList.keymap['N'] = self.searchPrev
+        self.pokeList.keymap['g'] = self.pokeList.top
+        self.pokeList.keymap['G'] = self.pokeList.bottom
 
         self.centerPile.keymap['j'] = self.centerPile.shiftDown
         self.centerPile.keymap['k'] = self.centerPile.shiftUp
@@ -476,7 +476,7 @@ class MainWidget(urwidgets.CommandFrame):
 
     def edit_file(self, fname, discard=False):
         if self.buff.dirty and not discard:
-            self.changeStatus('No write since last change (add ! to override)')
+            self.change_status('No write since last change (add ! to override)')
         else:
             try:
                 with open(fname, 'rb') as fp:
@@ -490,11 +490,11 @@ class MainWidget(urwidgets.CommandFrame):
                 )
                 self.header = fname_widget
             except IOError:
-                self.changeStatus('File not found')
+                self.change_status('File not found')
         
     def quit(self, discard=False):
         if self.buff.dirty and not discard:
-            self.changeStatus('No write since last change (add ! to override)')
+            self.change_tatus('No write since last change (add ! to override)')
         else:
             raise urwid.ExitMainLoop()
 
@@ -508,7 +508,7 @@ class MainWidget(urwidgets.CommandFrame):
             with open(fname, 'r') as fp:
                 mappers.json.load(fp, self.buff)
         except IOError:
-            self.changeStatus('File not found')
+            self.change_status('File not found')
         self.updateCenterColumn()
         self.updateLeftColumn()
 
@@ -519,7 +519,7 @@ class MainWidget(urwidgets.CommandFrame):
     def inc_search(self, query, start=0, direction='forward'):
         current_list = self.columns.focus
         current_pos = current_list.focus_position if start is None else start
-        predicate = (lambda x: query.lower() in x.base_widget.text.lower())
+        predicate = (lambda x: query.lower() in x.text.lower())
         index = current_list.find(
             predicate,
             start=current_pos,
@@ -535,14 +535,14 @@ class MainWidget(urwidgets.CommandFrame):
         self.last_search_direction = direction
         current_list = self.columns.focus
         current_pos = current_list.focus_position if start is None else start
-        predicate = (lambda x: query.lower() in x.base_widget.text.lower())
+        predicate = (lambda x: query.lower() in x.text.lower())
         index = current_list.find(
             predicate,
             start=current_pos,
             direction=direction
         )
         if index == -1:
-            self.changeStatus('%s Not Found.' % query)
+            self.change_status('%s Not Found.' % query)
         else:
             current_list.set_focus(index)
 
@@ -636,7 +636,7 @@ class MainWidget(urwidgets.CommandFrame):
             self.updateLeftColumn()
             self.updateCenterColumn()
         else:
-            self.changeStatus('Pokemon not recognized')
+            self.change_status('Pokemon not recognized')
 
     def setAttackDv(self, value):
         poke = self.currentPokemon

@@ -13,13 +13,13 @@ argument_regex = r"(?:'[^']*'|\"[^\"]*\"|[^\s'\"]+)"
 command_regex = r'(?P<command>[^\s\'"]+)(?P<arguments>(?:\s+%s)*)' % argument_regex
 
 def parse_command(command):
-        match = re.match(self.command_regex, command)
+        match = re.match(command_regex, command)
         if match is None:
             return None
         arguments = [
             arg.strip('"\' ')
             for arg in
-            re.findall(self.argument_regex, match.group('arguments'))
+            re.findall(argument_regex, match.group('arguments'))
         ]
         return (
             match.group('command'),
@@ -31,21 +31,31 @@ class MappedWrap(urwid.AttrMap):
                  attrmap=None, focusmap=None,
                  keymap={}, selectable=True,
                  *args, **kwargs):
-        self._widget = widget
-        self.keymap = dict(keymap)
-        self._s = selectable
+        
+        cls = widget.__class__
+        signals = urwid.signals._signals._supported[cls]
+        for signal in signals:
+            urwid.register_signal(MappedWrap, signal)
+
+
+        self.__dict__['_widget'] = widget
+        self.__dict__['keymap'] = dict(keymap)
+        self.__dict__['_s'] = selectable
 
         super(MappedWrap, self).__init__(widget, attrmap, focusmap, *args, **kwargs)
 
     def __getattr__(self, name):
         return getattr(self._widget, name)
 
-    def __setattribute__(self, name, value):
-        return setattr(self._widget, name, value)
+    def __setattr__(self, name, value):
+        if hasattr(MappedWrap, name):
+            return getattr(MappedWrap, name).fset(self, value)
+        else:
+            return setattr(self._widget, name, value)
 
     def keypress(self, size, key):
         if hasattr(self._widget, 'keypress'):
-            key = self._widget.keypress(size, key)
+            key = super(MappedWrap, self).keypress(size, key)
         if key in self.keymap:
             key = self.keymap[key]()
         return key
@@ -68,6 +78,12 @@ class MappedWrap(urwid.AttrMap):
     @focusmap.setter
     def focusmap(self, value):
         self.set_focus_map(value)
+
+    @property
+    def base_widget(self):
+        if hasattr(self._widget, 'base_widget'):
+            return self._widget.base_widget
+        return self._widget
 
 
 class CommandFrame(urwid.Frame):
@@ -94,19 +110,20 @@ class CommandFrame(urwid.Frame):
         parse_result = parse_command(data)
         if parse_result is None:
             self.change_status("Invalid command")
-        func, args = parse_result
-        if func not in self.commands:
-            self.change_status("Command not found")
         else:
-            try:   
-                self.commands[func](*args)
-            except TypeError:
-                # Too many arguments
-                tb = traceback.extract_tb(sys.exc_info()[2])
-                if len(tb) == 1:
-                    self.changeStatus("Wrong number of arguments")
-                else:
-                    raise
+            func, args = parse_result
+            if func not in self.commands:
+                self.change_status("Command not found")
+            else:
+                try:   
+                    self.commands[func](*args)
+                except TypeError:
+                    # Too many arguments
+                    tb = traceback.extract_tb(sys.exc_info()[2])
+                    if len(tb) == 1:
+                        self.changeStatus("Wrong number of arguments")
+                    else:
+                        raise
 
     def stop_editing(self):
         self.command_line.set_caption('')
@@ -133,17 +150,15 @@ class CommandFrame(urwid.Frame):
 
 
 class MappedList(urwid.ListBox):
-    def __init__(self, widgets=[], keymap={}, shiftFunc=None):
-        self.scroll = utility.scroll(range(len(widgets)))
-        self.widgets = widgets
+    def __init__(self, body, keymap={}):
+        self.scroll = utility.scroll(range(len(body)))
         self.keymap = dict(keymap)
-        self.shiftFunc = shiftFunc
-        super(MappedList, self).__init__(urwid.SimpleFocusListWalker(widgets))
+        super(MappedList, self).__init__(body)
 
     def keypress(self, size, key):
         key = super(MappedList, self).keypress(size, key)
         if key in self.keymap:
-            key = self.keymap[key](size)
+            key = self.keymap[key]()
         return key
 
     def top(self):
@@ -152,19 +167,22 @@ class MappedList(urwid.ListBox):
     def bottom(self):
         self.set_focus(len(self.body) - 1)
 
-    def shiftDown(self, size, amount=1):
+    def shiftDown(self, amount=1):
         if self.body.focus is not self.scroll(amount):
-            self.change_focus(size, self.scroll())
-            self.set_focus_valign('middle')
-            if self.shiftFunc:
-                self.shiftFunc()
+            self.focus_position = self.scroll()
+            self.body[:] = self.body[:]
+            urwid.emit_signal(self, 'shift')
+        else:
+            urwid.emit_signal(self, 'bottom')
 
-    def shiftUp(self, size, amount=1):
+
+    def shiftUp(self, amount=1):
         if self.body.focus is not self.scroll(-amount):
-            self.change_focus(size, self.scroll())
-            self.set_focus_valign('middle')
-            if self.shiftFunc:
-                self.shiftFunc()
+            self.focus_position = self.scroll()
+            self.body[:] = self.body[:]
+            urwid.emit_signal(self, 'shift')
+        else:
+            urwid.emit_signal(self,'top')
 
     def set(self, contents):
         self.body[:] = contents
@@ -179,8 +197,7 @@ class MappedList(urwid.ListBox):
         self.set_focus_valign('middle')
         self.body[:] = self.body[:]
         self.scroll = utility.scroll(range(len(self.body[:])), position)
-        if self.shiftFunc:
-            self.shiftFunc()
+        urwid.emit_signal(self, 'shift')
 
     def find(self, predicate, start=0, direction='forward'):
         total = len(self.body)
@@ -191,54 +208,37 @@ class MappedList(urwid.ListBox):
                 return index if index >= 0 else total + index
         return -1
 
+    def isEmpty(self):
+        return len(self.body[:]) == 0
+
 
 class MappedPile(urwid.Pile):
-    filler = urwid.Text("")
-
-    def __init__(self, widgets=[],
-                 keymap={}, hitTop=None, hitBottom=None,
-                 shiftFunc=None, focus_item=None,
-                 space=0, constraint=(lambda x, y: True)):
+    def __init__(self, widgets=[], focus_item=None,
+                 constraint=(lambda x, y: True), keymap={}):
         self.keymap = dict(keymap)
-        widgets = [item
-                   for sublist in
-                   zip(widgets,
-                       *itertools.tee(
-                           itertools.repeat(MappedPile.filler),
-                           space
-                           )
-                       )
-                   for item in sublist]
         self.constraint = constraint
-        self.hitTop = hitTop
-        self.hitBottom = hitBottom
-        self.shiftFunc = shiftFunc
         super(MappedPile, self).__init__(widgets, focus_item)
 
     def keypress(self, size, key):
-        # key = super(MappedPile, self).keypress(size, key)
-        if self.focus.selectable():
-            item_rows = self.get_item_rows(size, focus=True) \
-                if len(size) == 2 else None
-            tsize = self.get_item_size(size, self.focus_position,
-                                       True, item_rows)
-            key = self.focus.keypress(tsize, key)
+        key = super(MappedPile, self).keypress(size, key)
         if key in self.keymap:
             key = self.keymap[key]()
         return key
 
     def top(self):
-        for index in xrange(0, len(self.contents)):
+        for index in xrange(len(self.contents)):
             widget = self.contents[index][0]
-            if widget is not MappedPile.filler and self.constraint(index, widget):
+            if self.constraint(index, widget):
                 self.focus_position = index
+                urwid.emit_signal(self, 'shift')
                 return
     
     def bottom(self):
         for index in xrange(len(self.contents) - 1, -1, -1):
             widget = self.contents[index][0]
-            if widget is not MappedPile.filler and self.constraint(index, widget):
+            if self.constraint(index, widget):
                 self.focus_position = index
+                urwid.emit_signal(self, 'shift')
                 return
 
     def shiftDown(self, amount=1):
@@ -249,34 +249,29 @@ class MappedPile(urwid.Pile):
                 if index > self.focus_position
                 and widget is not MappedPile.filler
                 and self.constraint(index, widget)
-                ).next()
+            ).next()
             self.focus_position = nextIndex
+            urwid.emit_signal(self, 'shift')
         except StopIteration:
-            if self.hitBottom is not None:
-                self.hitBottom()
+            urwid.emit_signal(self, 'bottom')
 
     def shiftUp(self, amount=1):
         try:
             nextIndex = (
                 index for index, widget in
-                reversed(
-                    tuple(
-                        enumerate([cont[0] for cont in self.contents])
-                    )
-                )
+                utility.renumerate([cont[0] for cont in self.contents]) 
                 if index < self.focus_position
-                and widget is not MappedPile.filler
                 and self.constraint(index, widget)
-                ).next()
+            ).next()
             self.focus_position = nextIndex
+            urwid.emit_signal(self, 'shift')
         except StopIteration:
-            if self.hitTop is not None:
-                self.hitTop()
+            urwid.emit_signal(self, 'top')
 
     def selectable(self):
         return reduce(
             (lambda x, y: x | y),
-            [widget.selectable() for widget, options in self.contents]
+            [self.constraint(index, widget[0]) for index, widget in enumerate(self.contents)]
         )
 
     def isEmpty(self):
@@ -312,7 +307,6 @@ class TitledPile(MappedPile):
         self.contents.append((widget, self.options()))
         if len(self.contents) == 2:
             self.focus_position = 1
-            print 'yes'
 
     def set(self, widgets):
         super(TitledPile, self).set((self.title,) + tuple(widgets))
@@ -322,3 +316,6 @@ class TitledPile(MappedPile):
     def setTitle(self, widget):
         self.title = widget
         self.contents[0] = (widget, self.options())
+
+urwid.register_signal(MappedPile, ('shift', 'bottom', 'top'))
+urwid.register_signal(MappedList, ('shift', 'bottom', 'top'))

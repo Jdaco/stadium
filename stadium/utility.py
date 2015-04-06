@@ -1,3 +1,10 @@
+def renumerate(iterable):
+    return (
+        (index, iterable[index])
+        for index in
+        xrange(len(iterable) - 1, 0, -1)
+    )
+
 def chain(*args):
     def inner():
         for arg in args:
@@ -6,7 +13,6 @@ def chain(*args):
 
 def cached_coroutine(func):
     cache = {}
-
     def inner(*args, **kwargs):
         wrapped = func(*args, **kwargs)
         cache[wrapped] = wrapped.next()
