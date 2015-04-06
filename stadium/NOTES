@@ -13,7 +13,7 @@ Configurable Colors
     MappedWrap:
         Should selectable be setable?
     CommandFrame:
-        Should other things be display in footer
+        Should other things be displayed in footer
         Should the command_line exit on final backspace?
         Add tab completion/abbreviation/non-ambiguous to CommandFrame
         Commands should:

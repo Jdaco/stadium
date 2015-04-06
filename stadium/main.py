@@ -8,8 +8,12 @@ import utility
 import mappers
 
 class MainWidget(urwidgets.CommandFrame):
+    def help(self, command):
+        self.change_status(repr(eval(command)))
+
     def __init__(self, buff):
         self.commands = {
+            'help': self.help,
             'wq': utility.chain(self.write, self.quit),
             'quit': self.quit,
             'quit!': partial(self.quit, discard=True),
@@ -78,165 +82,166 @@ class MainWidget(urwidgets.CommandFrame):
         )
         urwid.connect_signal(self.currentMoveList, 'bottom', self.centerShiftDown)
 
-        self.baseHp = ui.LeftRightWidget("HP: ", "Test",
-                                         attrmap='base', focusmap='base',
-                                         selectable=False)
-        self.baseAtt = ui.LeftRightWidget("Attack: ", "Test",
-                                          attrmap='base', focusmap='base',
-                                          selectable=False)
-        self.baseDef = ui.LeftRightWidget("Defense: ", "Test",
-                                          attrmap='base', focusmap='base',
-                                          selectable=False)
-        self.baseSatt = ui.LeftRightWidget("Special Attack: ", "Test",
-                                           attrmap='base', focusmap='base',
-                                           selectable=False)
-        self.baseSdef = ui.LeftRightWidget("Special Defense: ", "Test",
-                                           attrmap='base', focusmap='base',
-                                           selectable=False)
-        self.baseSpeed = ui.LeftRightWidget("Speed: ", "Test",
-                                            attrmap='base', focusmap='base',
-                                            selectable=False)
+        self.base_hp = urwidgets.MappedWrap(
+            ui.LeftRightWidget(" HP: ", ''),
+            attrmap='base', focusmap='base',
+            selectable=False,
+        )
+        self.base_att = urwidgets.MappedWrap(
+            ui.LeftRightWidget(" Attack: ", ''),
+            attrmap='base', focusmap='base',
+            selectable=False,
+        )
+        self.base_def = urwidgets.MappedWrap(
+            ui.LeftRightWidget(" Defense: ", ''),
+            attrmap='base', focusmap='base',
+            selectable=False,
+        )
+        self.base_satt = urwidgets.MappedWrap(
+            ui.LeftRightWidget(" Special Attack: ", ''),
+            attrmap='base', focusmap='base',
+            selectable=False,
+        )
+        self.base_sdef = urwidgets.MappedWrap(
+            ui.LeftRightWidget(" Special Defense: ", ''),
+            attrmap='base', focusmap='base',
+            selectable=False,
+        )
+        self.base_speed = urwidgets.MappedWrap(
+            ui.LeftRightWidget(" Speed: ", ''),
+            attrmap='base', focusmap='base',
+            selectable=False,
+        )
 
-        self.basePile = urwidgets.MappedPile([
-            self.baseHp,
-            self.baseAtt,
-            self.baseDef,
-            self.baseSatt,
-            self.baseSdef,
-            self.baseSpeed,
+        self.base_pile = urwidgets.MappedPile([
+            self.base_hp,
+            self.base_att,
+            self.base_def,
+            self.base_satt,
+            self.base_sdef,
+            self.base_speed,
         ])
 
         self.level_meter = ui.LabeledMeter(
             'Level', 1, 100, 'progress', 'progress_red',
             initial=self.currentPokemon.level,
-            shiftFunc=self.setLevel
         )
         self.happiness_meter = ui.LabeledMeter(
             'Happiness', 0, 255, 'progress', 'progress_red',
             initial=self.currentPokemon.happiness,
-            shiftFunc=self.setHappiness
         )
         self.attack_exp_meter = ui.LabeledMeter(
             'Attack Exp.', 0, 65535, 'progress', 'progress_blue',
             initial=self.currentPokemon.attackExp,
             shiftAmount=100,
-            shiftFunc=self.setAttackExp
         )
         self.hp_exp_meter = ui.LabeledMeter(
             'HP Exp.', 0, 65535, 'progress', 'progress_blue',
             initial=self.currentPokemon.hpExp,
             shiftAmount=100,
-            shiftFunc=self.setHpExp
         )
         self.defense_exp_meter = ui.LabeledMeter(
             'Defense Exp.', 0, 65535, 'progress', 'progress_blue',
             initial=self.currentPokemon.defenseExp,
             shiftAmount=100,
-            shiftFunc=self.setDefenseExp
         )
         self.speed_exp_meter = ui.LabeledMeter(
             'Speed Exp.', 0, 65535, 'progress', 'progress_blue',
             initial=self.currentPokemon.speedExp,
             shiftAmount=100,
-            shiftFunc=self.setSpeedExp
         )
         self.special_exp_meter = ui.LabeledMeter(
             'Special Exp.', 0, 65535, 'progress', 'progress_blue',
             initial=self.currentPokemon.specialExp,
             shiftAmount=100,
-            shiftFunc=self.setSpecialExp
         )
         self.attack_dv_meter = ui.LabeledMeter(
             'Attack DV.', 0, 15, 'progress', 'progress_cyan',
             initial=self.currentPokemon.attackDv,
-            shiftFunc=self.setAttackDv
         )
         self.defense_dv_meter = ui.LabeledMeter(
             'Defense DV.', 0, 15, 'progress', 'progress_cyan',
             initial=self.currentPokemon.defenseDv,
-            shiftFunc=self.setDefenseDv
         )
         self.speed_dv_meter = ui.LabeledMeter(
             'Speed DV.', 0, 15, 'progress', 'progress_cyan',
             initial=self.currentPokemon.speedDv,
-            shiftFunc=self.setSpeedDv
         )
         self.special_dv_meter = ui.LabeledMeter(
             'Special DV.', 0, 15, 'progress', 'progress_cyan',
             initial=self.currentPokemon.specialDv,
-            shiftFunc=self.setSpecialDv
         )
         self.hp_dv_meter = ui.LabeledMeter(
             'HP DV.', 0, 15, 'progress', 'progress_cyan',
             initial=self.currentPokemon.specialDv,
             selectable=False
         )
+        urwid.connect_signal(self.level_meter, 'shift', self.setLevel)
+        urwid.connect_signal(self.happiness_meter, 'shift', self.setHappiness)
+        urwid.connect_signal(self.hp_exp_meter, 'shift', self.setHpExp)
+        urwid.connect_signal(self.attack_exp_meter, 'shift', self.setAttackExp)
+        urwid.connect_signal(self.defense_exp_meter, 'shift', self.setDefenseExp)
+        urwid.connect_signal(self.speed_exp_meter, 'shift', self.setSpeedExp)
+        urwid.connect_signal(self.special_exp_meter, 'shift', self.setSpecialExp)
+        urwid.connect_signal(self.attack_dv_meter, 'shift', self.setAttackDv)
+        urwid.connect_signal(self.defense_dv_meter, 'shift', self.setDefenseDv)
+        urwid.connect_signal(self.speed_dv_meter, 'shift', self.setSpeedDv)
+        urwid.connect_signal(self.special_dv_meter, 'shift', self.setSpecialDv)
+
         self.centerPile = urwidgets.MappedPile(
             [
                 self.currentMoveList,
                 urwid.Divider('-', top=1, bottom=1),
-                self.basePile,
-                urwid.Divider(' '),
-                urwid.AttrMap(
-                    self.level_meter,
+            ] + utility.inner_lace([
+                self.base_pile, urwid.AttrMap(
+                self.level_meter,
                     'item', 'item_active'
                 ),
-                urwid.Divider(' '),
                 urwid.AttrMap(
                     self.happiness_meter,
                     'item', 'item_active'
                 ),
-                urwid.Divider(' '),
                 urwid.AttrMap(
                     self.hp_exp_meter,
                     'item', 'item_active'
                 ),
-                urwid.Divider(' '),
                 urwid.AttrMap(
                     self.attack_exp_meter,
                     'item', 'item_active'
                 ),
-                urwid.Divider(' '),
                 urwid.AttrMap(
                     self.defense_exp_meter,
                     'item', 'item_active'
                 ),
-                urwid.Divider(' '),
                 urwid.AttrMap(
                     self.speed_exp_meter,
                     'item', 'item_active'
                 ),
-                urwid.Divider(' '),
                 urwid.AttrMap(
                     self.special_exp_meter,
                     'item', 'item_active'
                 ),
-                urwid.Divider(' '),
                 urwid.AttrMap(
                     self.hp_dv_meter,
                     'item', 'item_active'
                 ),
-                urwid.Divider(' '),
                 urwid.AttrMap(
                     self.attack_dv_meter,
                     'item', 'item_active'
                 ),
-                urwid.Divider(' '),
                 urwid.AttrMap(
                     self.defense_dv_meter,
                     'item', 'item_active'
                 ),
-                urwid.Divider(' '),
                 urwid.AttrMap(
                     self.speed_dv_meter,
                     'item', 'item_active'
                 ),
-                urwid.Divider(' '),
                 urwid.AttrMap(
                     self.special_dv_meter,
                     'item', 'item_active'
                 ),
-            ],
+            ], urwid.Divider(' ')),
             constraint=lambda x, y: y.selectable()
         )
 
@@ -250,21 +255,21 @@ class MainWidget(urwidgets.CommandFrame):
 
         # column transition functions
         def moves_to_current():
-            self.unsetActive(self.currentMoveList.focus)
+            self.currentMoveList.focus.attrmap = 'item'
             self.columns.focus_position = 1
 
         def current_to_poke():
-            self.unsetActive(self.pokeList.focus)
+            self.pokeList.focus.attrmap = 'item'
             self.columns.focus_position = 0
 
         def poke_to_current():
-            self.setActive(self.pokeList.focus)
+            self.pokeList.focus.attrmap = 'item_active'
             self.columns.focus_position = 1
             self.centerPile.focus_position = 0
             self.currentMoveList.focus_position = 0
 
         def current_to_moves():
-            self.setActive(self.currentMoveList.focus)
+            self.currentMoveList.focus.attrmap = 'item_active'
             self.columns.focus_position = 2
 
         def moves_set_move():
@@ -494,7 +499,7 @@ class MainWidget(urwidgets.CommandFrame):
         
     def quit(self, discard=False):
         if self.buff.dirty and not discard:
-            self.change_tatus('No write since last change (add ! to override)')
+            self.change_status('No write since last change (add ! to override)')
         else:
             raise urwid.ExitMainLoop()
 
@@ -557,33 +562,56 @@ class MainWidget(urwidgets.CommandFrame):
             self.search(self.last_search, direction=_direction)
             self.last_search_direction = last_search
 
+    def maxPokemon(self, overwrite=False):
+        poke = self.currentPokemon
+        h_type = poke.hiddenPowerType
+        poke.max()
+
+        if not overwrite and 'hidden power' in poke.moves:
+            poke.hiddenPowerType = h_type
+
+        self.updateCenterColumn()
+
+    def maxAllPokemon(self, overwrite=False):
+        if not overwrite:
+            for pokemon in self.pokemon:
+                h_type = pokemon.hiddenPowerType
+                pokemon.max()
+                if 'hidden power' in pokemon.moves:
+                    pokemon.hiddenPowerType = h_type
+        else:
+            for pokemon in self.pokemon:
+                pokemon.max()
+            
+        self.updateCenterColumn()
+
     def updateMoves(self):
         self.currentMoveList.set(self.currentMoves())
 
     def updateStats(self):
         poke = self.currentPokemon
-        self.baseHp.setRight(str(poke.hp))
-        self.baseAtt.setRight(str(poke.attack))
-        self.baseDef.setRight(str(poke.defense))
-        self.baseSatt.setRight(str(poke.spattack))
-        self.baseSdef.setRight(str(poke.spdefense))
-        self.baseSpeed.setRight(str(poke.speed))
+        self.base_hp.setRight(str(poke.hp) + " ")
+        self.base_att.setRight(str(poke.attack) + " ")
+        self.base_def.setRight(str(poke.defense) + " ")
+        self.base_satt.setRight(str(poke.spattack) + " ")
+        self.base_sdef.setRight(str(poke.spdefense) + " ")
+        self.base_speed.setRight(str(poke.speed) + " ")
 
     def updateCenterColumn(self):
         self.updateMoves()
         poke = self.currentPokemon
-        self.level_meter.set_completion(poke.level)
-        self.happiness_meter.set_completion(poke.happiness)
-        self.attack_exp_meter.set_completion(poke.attackExp)
-        self.hp_exp_meter.set_completion(poke.hpExp)
-        self.defense_exp_meter.set_completion(poke.defenseExp)
-        self.speed_exp_meter.set_completion(poke.speedExp)
-        self.special_exp_meter.set_completion(poke.specialExp)
+        self.level_meter._set_completion(poke.level)
+        self.happiness_meter._set_completion(poke.happiness)
+        self.attack_exp_meter._set_completion(poke.attackExp)
+        self.hp_exp_meter._set_completion(poke.hpExp)
+        self.defense_exp_meter._set_completion(poke.defenseExp)
+        self.speed_exp_meter._set_completion(poke.speedExp)
+        self.special_exp_meter._set_completion(poke.specialExp)
         self.updateHpDv()
-        self.attack_dv_meter.set_completion(poke.attackDv)
-        self.defense_dv_meter.set_completion(poke.defenseDv)
-        self.speed_dv_meter.set_completion(poke.speedDv)
-        self.special_dv_meter.set_completion(poke.specialDv)
+        self.attack_dv_meter._set_completion(poke.attackDv)
+        self.defense_dv_meter._set_completion(poke.defenseDv)
+        self.speed_dv_meter._set_completion(poke.speedDv)
+        self.special_dv_meter._set_completion(poke.specialDv)
         self.updateStats()
 
     def updateLeftColumn(self):
@@ -603,31 +631,6 @@ class MainWidget(urwidgets.CommandFrame):
         poke = self.currentPokemon
         self.hp_dv_meter.set_completion(poke.hpDv)
 
-    def maxPokemon(self, overwrite=False):
-        poke = self.currentPokemon
-        h_type = poke.hiddenPowerType
-        poke.max()
-
-        if not overwrite and 'hidden power' in poke.moves:
-            poke.hiddenPowerType = h_type
-
-        self.updateCenterColumn()
-        self.updateHpDv()
-
-    def maxAllPokemon(self, overwrite=False):
-        if not overwrite:
-            for pokemon in self.pokemon:
-                h_type = pokemon.hiddenPowerType
-                pokemon.max()
-                if 'hidden power' in pokemon.moves:
-                    pokemon.hiddenPowerType = h_type
-        else:
-            for pokemon in self.pokemon:
-                pokemon.max()
-            
-        self.updateCenterColumn()
-        self.updateHpDv()
-
     def setSpecies(self, species):
         poke = self.currentPokemon
         species = species.lower()
@@ -639,8 +642,7 @@ class MainWidget(urwidgets.CommandFrame):
             self.change_status('Pokemon not recognized')
 
     def setAttackDv(self, value):
-        poke = self.currentPokemon
-        poke.attackDv = value
+        self.currentPokemon.attackDv = value
         self.updateHpDv()
 
         self.updateStats()
@@ -648,8 +650,7 @@ class MainWidget(urwidgets.CommandFrame):
         self.updateMoves()
 
     def setDefenseDv(self, value):
-        poke = self.currentPokemon
-        poke.defenseDv = value
+        self.currentPokemon.defenseDv = value
         self.updateHpDv()
 
         self.updateStats()
@@ -657,40 +658,33 @@ class MainWidget(urwidgets.CommandFrame):
         self.updateMoves()
 
     def setSpeedDv(self, value):
-        poke = self.currentPokemon
-        poke.speedDv = value
+        self.currentPokemon.speedDv = value
         self.updateHpDv()
         self.updateStats()
 
     def setSpecialDv(self, value):
-        poke = self.currentPokemon
-        poke.specialDv = value
+        self.currentPokemon.specialDv = value
         self.updateHpDv()
         self.updateStats()
 
     def setSpecialExp(self, value):
-        poke = self.currentPokemon
-        poke.specialExp = value
+        self.currentPokemon.specialExp = value
         self.updateStats()
 
     def setSpeedExp(self, value):
-        poke = self.currentPokemon
-        poke.speedExp = value
+        self.currentPokemon.speedExp = value
         self.updateStats()
 
     def setDefenseExp(self, value):
-        poke = self.currentPokemon
-        poke.defenseExp = value
+        self.currentPokemon.defenseExp = value
         self.updateStats()
 
     def setHpExp(self, value):
-        poke = self.currentPokemon
-        poke.hpExp = value
+        self.currentPokemon.hpExp = value
         self.updateStats()
 
     def setAttackExp(self, value):
-        poke = self.currentPokemon
-        poke.attackExp = value
+        self.currentPokemon.attackExp = value
         self.updateStats()
 
     def setHappiness(self, happiness):
@@ -705,10 +699,8 @@ class MainWidget(urwidgets.CommandFrame):
             move = 'hidden power'
         pokemon.moves[index] = move
 
-    def setLevel(self, level):
-        poke = self.currentPokemon
-        poke.level = level
-        self.level_meter.set_completion(poke.level)
+    def setLevel(self, value):
+        self.currentPokemon.level = value
         self.updateStats()
 
     def centerShiftDown(self):
@@ -733,9 +725,3 @@ class MainWidget(urwidgets.CommandFrame):
             )
             for move in poke.moves
         ]
-
-    def setActive(self, widget):
-        widget.set_attr_map({None: 'item_active'})
-
-    def unsetActive(self, widget):
-        widget.set_attr_map({None: 'item'})

@@ -1,8 +1,21 @@
+import itertools
+
+def inner_lace(iterable, lace):
+    r = [
+        i
+        for item in
+        itertools.izip(
+            iterable, itertools.repeat(lace)
+        )
+        for i in item
+    ]
+    r.pop(-1)
+    return r
 def renumerate(iterable):
     return (
         (index, iterable[index])
         for index in
-        xrange(len(iterable) - 1, 0, -1)
+        xrange(len(iterable) - 1, -1, -1)
     )
 
 def chain(*args):

@@ -69,7 +69,10 @@ class MappedWrap(urwid.AttrMap):
 
     @attrmap.setter
     def attrmap(self, value):
-        self.set_attr_map(value)
+        if hasattr(value, 'items'):
+            self.set_attr_map(value)
+        else:
+            self.set_attr_map({None: value})
 
     @property
     def focusmap(self):
@@ -175,7 +178,6 @@ class MappedList(urwid.ListBox):
         else:
             urwid.emit_signal(self, 'bottom')
 
-
     def shiftUp(self, amount=1):
         if self.body.focus is not self.scroll(-amount):
             self.focus_position = self.scroll()
@@ -214,7 +216,7 @@ class MappedList(urwid.ListBox):
 
 class MappedPile(urwid.Pile):
     def __init__(self, widgets=[], focus_item=None,
-                 constraint=(lambda x, y: True), keymap={}):
+                 constraint=(lambda x, y: y.selectable()), keymap={}):
         self.keymap = dict(keymap)
         self.constraint = constraint
         super(MappedPile, self).__init__(widgets, focus_item)
@@ -247,7 +249,6 @@ class MappedPile(urwid.Pile):
                 index for index, widget in
                 enumerate([cont[0] for cont in self.contents])
                 if index > self.focus_position
-                and widget is not MappedPile.filler
                 and self.constraint(index, widget)
             ).next()
             self.focus_position = nextIndex
