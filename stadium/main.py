@@ -1,4 +1,5 @@
 from functools import partial
+from string import capwords
 import urwid
 import ui
 import maps
@@ -67,7 +68,7 @@ class MainWidget(urwidgets.CommandFrame):
 
         self.moveWidgets = [
             urwidgets.MappedWrap(
-                urwid.Text(utility.capWord(move)),
+                urwid.Text(capwords(move)),
                 attrmap='item',
                 focusmap='item_focus'
             )
@@ -718,7 +719,7 @@ class MainWidget(urwidgets.CommandFrame):
                     '-----' if move is None else
                     'Hidden Power(%s)' % poke.hiddenPowerType
                     if move == 'hidden power'
-                    else utility.capWord(move)
+                    else capwords(move)
                 ),
                 attrmap='item',
                 focusmap='item_focus'

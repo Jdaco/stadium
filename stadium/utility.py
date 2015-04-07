@@ -37,11 +37,6 @@ def cached_coroutine(func):
         return interface
     return inner
     
-
-def capWord(string):
-    words = (word.capitalize() for word in string.split())
-    return ' '.join(words)
-
 @cached_coroutine
 def scroll(collection, initial=0):
     max_length = len(collection) - 1
