@@ -101,6 +101,12 @@ class CommandFrame(urwid.Frame):
 
         self.keymap[':'] = functools.partial(self.start_editing, callback=self.submit_command)
 
+        def backspace():
+            if self.command_line.get_edit_text() == '':
+                self.stop_editing()
+
+        self.command_line.keymap['backspace'] = backspace
+
         super(CommandFrame, self).__init__(body, header, self.command_line, focus_part)
 
     def keypress(self, size, key):
