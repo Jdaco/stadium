@@ -3,28 +3,10 @@ import sys
 import itertools
 import functools
 import traceback
+import shlex
 import urwid
-import pyparsing as pp
 import utility
-import re
 
-
-argument_regex = r"(?:'[^']*'|\"[^\"]*\"|[^\s'\"]+)"
-command_regex = r'(?P<command>[^\s\'"]+)(?P<arguments>(?:\s+%s)*)' % argument_regex
-
-def parse_command(command):
-        match = re.match(command_regex, command)
-        if match is None:
-            return None
-        arguments = [
-            arg.strip('"\' ')
-            for arg in
-            re.findall(argument_regex, match.group('arguments'))
-        ]
-        return (
-            match.group('command'),
-            arguments,
-        )
 
 class MappedWrap(urwid.AttrMap):
     def __init__(self, widget,
@@ -116,11 +98,13 @@ class CommandFrame(urwid.Frame):
         return key
 
     def submit_command(self, data):
-        parse_result = parse_command(data)
-        if parse_result is None:
+        try:
+            parse_result = shlex.split(data)
+        except ValueError:
             self.change_status("Invalid command")
         else:
-            func, args = parse_result
+            func = parse_result[0]
+            args = parse_result[1:]
             if func not in self.commands:
                 self.change_status("Command not found")
             else:
