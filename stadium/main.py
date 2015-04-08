@@ -9,12 +9,8 @@ import utility
 import mappers
 
 class MainWidget(urwidgets.CommandFrame):
-    def help(self, command):
-        self.change_status(repr(eval(command)))
-
     def __init__(self, buff):
         self.commands = {
-            'help': self.help,
             'wq': utility.chain(self.write, self.quit),
             'quit': self.quit,
             'quit!': partial(self.quit, discard=True),

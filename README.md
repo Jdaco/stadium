@@ -36,8 +36,7 @@ If the -o or -e flags are specified, the program exits after writing the file
  - `h` - Previous column
  - `>` - Increment meter
  - `<` - Decrement meter
- - `enter` - Set meter value
- - `enter` - Select move
+ - `enter` - Set value (species, meter, move)
 
 ##Commands
  - `wq` - Write to current file and quit
