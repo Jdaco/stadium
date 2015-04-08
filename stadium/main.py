@@ -43,7 +43,11 @@ class MainWidget(urwidgets.CommandFrame):
         ])
 
         def enter_species():
-            self.start_editing(caption="Species: ", callback=self.setSpecies)
+            self.start_editing(
+                caption="Species: ",
+                callback=self.setSpecies,
+                completion_set = maps.pokemon,
+            )
 
         self.pokemonWidgets = [
             urwidgets.MappedWrap(
@@ -277,8 +281,7 @@ class MainWidget(urwidgets.CommandFrame):
             index = self.currentMoveList.focus_position
             move = self.moveList.focus.text
             poke = self.pokemon[self.pokeList.body.focus]
-            self.setMove(poke, move, index)
-            self.updateCenterColumn()
+            self.setMove(move, index)
             moves_to_current()
 
         def start_searching(direction):
@@ -617,7 +620,11 @@ class MainWidget(urwidgets.CommandFrame):
 
     def updateLeftColumn(self):
         def enter_species():
-            self.start_editing(caption="Species: ", callback=self.setSpecies)
+            self.start_editing(
+                caption="Species: ",
+                callback=self.setSpecies,
+                completion_set = maps.pokemon,
+            )
 
         self.pokeList.set([
             urwidgets.MappedWrap(
@@ -692,13 +699,14 @@ class MainWidget(urwidgets.CommandFrame):
         poke = self.currentPokemon
         poke.happiness = happiness
 
-    def setMove(self, pokemon, move, index):
+    def setMove(self, move, index):
+        poke = self.currentPokemon
         if 'hidden power' in move.lower():
             t = move[13:move.index(')')]
-            poke = self.currentPokemon
             poke.hiddenPowerType = t
             move = 'hidden power'
-        pokemon.moves[index] = move
+        poke.moves[index] = move
+        self.updateMoves()
 
     def setLevel(self, value):
         self.currentPokemon.level = value
@@ -713,6 +721,17 @@ class MainWidget(urwidgets.CommandFrame):
 
     def currentMoves(self):
         poke = self.currentPokemon
+        
+        def enter_move():
+            self.start_editing(
+                caption="Move: ",
+                callback = partial(
+                    self.setMove,
+                    index=self.currentMoveList.focus_position,
+                ),
+                completion_set=maps.moves,
+            )
+
         return [
             urwidgets.MappedWrap(
                 urwid.Text(
@@ -722,7 +741,8 @@ class MainWidget(urwidgets.CommandFrame):
                     else capwords(move)
                 ),
                 attrmap='item',
-                focusmap='item_focus'
+                focusmap='item_focus',
+                keymap={'enter': enter_move},
             )
             for move in poke.moves
         ]

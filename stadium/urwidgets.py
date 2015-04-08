@@ -123,12 +123,21 @@ class CommandFrame(urwid.Frame):
         self.command_line.set_edit_text('')
         self.focus_position = 'body'
 
-    def start_editing(self, caption='> ', startText='', callback=None):
+    def start_editing(self, caption='> ', startText='', callback=None, completion_set=()):
         self.command_line.set_caption(caption)
         self.command_line.set_edit_text(startText)
         self.footer = self.command_line
         self.focus_position = "footer"
         callback = self.submitCommand if callback is None else callback
+
+        def complete():
+            self.command_line.set_edit_text(
+                utility.complete(
+                    completion_set,
+                    self.command_line.get_edit_text()
+                )
+            )
+            self.command_line.edit_pos = len(self.command_line.edit_text)
 
         def enter_command():
             t = self.command_line.edit_text
@@ -137,6 +146,7 @@ class CommandFrame(urwid.Frame):
 
         self.command_line.keymap['esc'] = self.stop_editing
         self.command_line.keymap['enter'] = enter_command
+        self.command_line.keymap['tab'] = complete
         
     def change_status(self, stat):
         self.footer = urwid.Text(stat)

@@ -1,5 +1,23 @@
 import itertools
 
+def complete(iterable, start_string):
+    hits = [
+        item[len(start_string):]
+        for item in iterable
+        if item[:len(start_string)] == start_string
+    ]
+    if len(hits) == 0:
+        return start_string
+    else:
+        return start_string + ''.join([
+            char[0] for char in
+            itertools.takewhile(
+                lambda x: len(set(x)) == 1,
+                itertools.izip(*hits)
+            )
+        ])
+
+
 def inner_lace(iterable, lace):
     r = [
         i
