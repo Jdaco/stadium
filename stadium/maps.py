@@ -297,7 +297,7 @@ moves = {
     'poison sting': 0x28,
     'twineedle': 0x29,
     'pin missle': 0x2a,
-    'leet': 0x2b,
+    'leer': 0x2b,
     'bite': 0x2c,
     'growl': 0x2d,
     'roar': 0x2e,
