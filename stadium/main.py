@@ -701,8 +701,11 @@ class MainWidget(urwidgets.CommandFrame):
             t = move[13:move.index(')')]
             poke.hiddenPowerType = t
             move = 'hidden power'
-        poke.moves[index] = move
-        self.updateMoves()
+        if move in self.moves:
+            poke.moves[index] = move
+            self.updateMoves()
+        else:
+            self.change_status("Move not found")
 
     def setLevel(self, value):
         self.currentPokemon.level = value
