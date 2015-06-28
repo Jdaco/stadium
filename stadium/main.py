@@ -8,6 +8,7 @@ import urwidgets
 import utility
 import mappers
 
+
 class MainWidget(urwidgets.CommandFrame):
     def __init__(self, buff):
         self.commands = {
@@ -29,6 +30,8 @@ class MainWidget(urwidgets.CommandFrame):
         self.last_search_direction = None
 
         self.buff = buff
+
+        self.current_json = None
 
         self.pokemon = tuple(self.buff.pokemon)
 
@@ -496,7 +499,7 @@ class MainWidget(urwidgets.CommandFrame):
                 self.header = fname_widget
             except IOError:
                 self.change_status('File not found')
-        
+
     def quit(self, discard=False):
         if self.buff.dirty and not discard:
             self.change_status('No write since last change (add ! to override)')
@@ -512,12 +515,19 @@ class MainWidget(urwidgets.CommandFrame):
         try:
             with open(fname, 'r') as fp:
                 mappers.json.load(fp, self.buff)
+                self.current_json = fname
         except IOError:
             self.change_status('File not found')
         self.updateCenterColumn()
         self.updateLeftColumn()
 
-    def export_json(self, fname):
+    def export_json(self, fname=None):
+        if not fname:
+            if self.current_json:
+                fname = self.current_json
+            else:
+                self.change_status("Not a valid file name")
+                return
         with open(fname, 'w') as fp:
             mappers.json.dump(fp, self.buff)
 
