@@ -307,12 +307,22 @@ class MainWidget(urwidgets.CommandFrame):
                 stop_searching()
                 self.search(text, start=current_pos, direction=direction)
 
+            #cleans up after a backspace cancel
+            #this should be removed in favor of events
+            def backspace_handler():
+                if self.command_line.edit_text == '':
+                    stop_searching()
+
             caption = '/' if direction == 'forward' else '?'
             self.start_editing(caption=caption, callback=exit_handler)
             urwid.connect_signal(self.command_line, 'change', handler)
             self.command_line.keymap['esc'] = utility.chain(
                 stop_searching,
                 self.command_line.keymap['esc']
+            )
+            self.command_line.keymap['backspace'] = utility.chain(
+                backspace_handler,
+                self.command_line.keymap['backspace'],
             )
 
         self.level_meter.keymap['enter'] = (
@@ -534,7 +544,7 @@ class MainWidget(urwidgets.CommandFrame):
     def inc_search(self, query, start=0, direction='forward'):
         current_list = self.columns.focus
         current_pos = current_list.focus_position if start is None else start
-        predicate = (lambda x: query.lower() in x.text.lower())
+        predicate = (lambda x: query.strip() != '' and query.lower() in x.text.lower())
         index = current_list.find(
             predicate,
             start=current_pos,
@@ -546,20 +556,21 @@ class MainWidget(urwidgets.CommandFrame):
             current_list.set_focus(index)
 
     def search(self, query, start=None, direction='forward'):
-        self.last_search = query
-        self.last_search_direction = direction
-        current_list = self.columns.focus
-        current_pos = current_list.focus_position if start is None else start
-        predicate = (lambda x: query.lower() in x.text.lower())
-        index = current_list.find(
-            predicate,
-            start=current_pos,
-            direction=direction
-        )
-        if index == -1:
-            self.change_status('%s Not Found.' % query)
-        else:
-            current_list.set_focus(index)
+        if query.strip() != '':
+            self.last_search = query
+            self.last_search_direction = direction
+            current_list = self.columns.focus
+            current_pos = current_list.focus_position if start is None else start
+            predicate = (lambda x: query.lower() in x.text.lower())
+            index = current_list.find(
+                predicate,
+                start=current_pos,
+                direction=direction
+            )
+            if index == -1:
+                self.change_status('%s Not Found.' % query)
+            else:
+                current_list.set_focus(index)
 
     def searchNext(self):
         if self.last_search:
