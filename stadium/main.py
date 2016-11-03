@@ -723,7 +723,7 @@ class MainWidget(urwidgets.CommandFrame):
 
     def setMove(self, move, index):
         poke = self.currentPokemon
-        if 'hidden power' in move.lower():
+        if 'hidden power' in move.lower() and move.lower() != 'hidden power':
             t = move[13:move.index(')')]
             poke.hiddenPowerType = t
             move = 'hidden power'
