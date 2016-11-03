@@ -34,16 +34,16 @@ If the -o or -e flags are specified, the program exits after writing the file
  - `N` - Previous match
  - `l` - Next column
  - `h` - Previous column
- - 'D' - Delete currently selected move
+ - `D` - Deleted currently selected move
  - `>` - Increment meter
  - `<` - Decrement meter
  - `enter` - Set value (species, meter, move)
 
 ##Commands
  - `wq` - Write to current file and quit
- - `quit[!]` - Quit the program (add `!` to discard changes) 
+ - `quit[!]`, `q[!]` - Quit the program (add `!` to discard changes) 
  - `edit[!] filename` - Edit anothe rom file (add `!` to discard changes)
- - `write [filename]` - Write to the current file (or optional filename)
+ - `write [filename]`, `w [filename]` - Write to the current file (or optional filename)
  - `import [filename]` - import data from json file
  - `export [filename]` - export data to json file
  - `max[!]` - Max out all meters for the current pokemon (add `!` to overwrite Hidden Power type)
