@@ -34,6 +34,7 @@ If the -o or -e flags are specified, the program exits after writing the file
  - `N` - Previous match
  - `l` - Next column
  - `h` - Previous column
+ - 'D' - Delete currently selected move
  - `>` - Increment meter
  - `<` - Decrement meter
  - `enter` - Set value (species, meter, move)
