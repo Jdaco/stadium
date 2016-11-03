@@ -28,7 +28,8 @@ def inner_lace(iterable, lace):
         )
         for i in item
     ]
-    r.pop(-1)
+    if r:
+        r.pop(-1)
     return r
 
 # Reverse Enumerate
