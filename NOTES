@@ -1,0 +1,29 @@
+main.py
+    Display hidden power type
+    Stick to single variable/function name scheme
+    Remove duplicated enter_species
+        updateLeftColumn
+    Reduce or refactor creating new widgets
+    Separate hidden power logic
+        setMove
+        maxAllPokemon
+        maxPokemon
+
+    Isolate Searching functionality
+       searchNext
+       searchPrev
+       search
+       inc_search
+
+    Isolate file management
+        export_json
+        import_json
+        write
+        edit_file
+
+utility.py
+    test everything
+
+domain.py
+
+json_mapper.py

@@ -41,13 +41,22 @@ class MainWidget(urwidgets.CommandFrame):
             maps.moves.iteritems()
         ])
 
+        #Start command to change species
         def enter_species():
             self.start_editing(
                 caption="Species: ",
                 callback=self.setSpecies,
-                completion_set = maps.pokemon,
+                completion_set = maps.pokemon.keys(),
             )
 
+        #Replace hidden power with all types of hidden power
+        hpIndex = moves.index('hidden power')
+        self.moves = moves[:hpIndex] + [
+            'hidden power(%s)' % t.capitalize()
+            for t in sorted(maps.hidden_power.keys())
+        ] + moves[hpIndex+1:]
+
+        # --- Create Widgets ---
         self.pokemonWidgets = [
             urwidgets.MappedWrap(
                 urwid.Text(poke.species.capitalize()),
@@ -61,13 +70,6 @@ class MainWidget(urwidgets.CommandFrame):
             urwid.SimpleFocusListWalker(self.pokemonWidgets),
         )
         urwid.connect_signal(self.pokeList, 'shift', self.updateCenterColumn)
-
-        hpIndex = moves.index('hidden power')
-
-        self.moves = moves[:hpIndex] + [
-            'hidden power(%s)' % t.capitalize()
-            for t in sorted(maps.hidden_power.keys())
-        ] + moves[hpIndex+1:]
 
         self.moveWidgets = [
             urwidgets.MappedWrap(
@@ -84,6 +86,7 @@ class MainWidget(urwidgets.CommandFrame):
         self.currentMoveList = urwidgets.MappedPile(
             self.currentMoves(),
         )
+
         urwid.connect_signal(self.currentMoveList, 'bottom', self.centerShiftDown)
 
         self.base_hp = urwidgets.MappedWrap(
@@ -249,6 +252,7 @@ class MainWidget(urwidgets.CommandFrame):
             constraint=lambda x, y: y.selectable()
         )
 
+        # --- Actions for Key Mapping ---
         # for convenience in meter setup
         def set_bar_value(func, bar):
             def inner(value_string):
@@ -325,6 +329,7 @@ class MainWidget(urwidgets.CommandFrame):
                 self.command_line.keymap['backspace'],
             )
 
+        # --- Key Mappings ---
         self.level_meter.keymap['enter'] = (
             lambda: self.start_editing(
                 caption='Level: ',
@@ -721,7 +726,6 @@ class MainWidget(urwidgets.CommandFrame):
         if 'hidden power' in move.lower():
             t = move[13:move.index(')')]
             poke.hiddenPowerType = t
-            move = 'hidden power'
         if move.lower() in self.moves:
             poke.moves[index] = move
             self.updateMoves()

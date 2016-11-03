@@ -1,5 +1,6 @@
 import itertools
 
+# String Completion
 def complete(iterable, start_string):
     hits = [
         item[len(start_string):]
@@ -17,7 +18,7 @@ def complete(iterable, start_string):
             )
         ])
 
-
+# Add "lace" between each item in iterable
 def inner_lace(iterable, lace):
     r = [
         i
@@ -29,6 +30,8 @@ def inner_lace(iterable, lace):
     ]
     r.pop(-1)
     return r
+
+# Reverse Enumerate
 def renumerate(iterable):
     return (
         (index, iterable[index])
@@ -36,12 +39,14 @@ def renumerate(iterable):
         xrange(len(iterable) - 1, -1, -1)
     )
 
+# Simple function chaining
 def chain(*args):
     def inner():
         for arg in args:
             arg()
     return inner
 
+# Decorator that adds caching to coroutine
 def cached_coroutine(func):
     cache = {}
     def inner(*args, **kwargs):
@@ -55,6 +60,7 @@ def cached_coroutine(func):
         return interface
     return inner
     
+# Scrollbar Functionality - Inputs change the position in a collection
 @cached_coroutine
 def scroll(collection, initial=0):
     max_length = len(collection) - 1
