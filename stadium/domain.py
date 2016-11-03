@@ -159,6 +159,8 @@ class Pokemon(object):
 
     @level.setter
     def level(self, value):
+        value = min(value, 100)
+        value = max(value, 0)
         self[self._level] = value
 
     @property
@@ -167,6 +169,8 @@ class Pokemon(object):
 
     @happiness.setter
     def happiness(self, value):
+        value = min(value, 255)
+        value = max(value, 0)
         self[self._happiness] = value
 
     @property
@@ -175,6 +179,8 @@ class Pokemon(object):
 
     @hpExp.setter
     def hpExp(self, value):
+        value = min(value, 0xFFFF)
+        value = max(value, 0)
         byteOne, byteTwo = self._sepBytes(value)
         self[self._hpExp] = byteOne
         self[self._hpExp + 1] = byteTwo
@@ -185,6 +191,8 @@ class Pokemon(object):
 
     @attackExp.setter
     def attackExp(self, value):
+        value = min(value, 0xFFFF)
+        value = max(value, 0)
         byteOne, byteTwo = self._sepBytes(value)
         self[self._attackExp] = byteOne
         self[self._attackExp + 1] = byteTwo
@@ -195,6 +203,8 @@ class Pokemon(object):
 
     @defenseExp.setter
     def defenseExp(self, value):
+        value = min(value, 0xFFFF)
+        value = max(value, 0)
         byteOne, byteTwo = self._sepBytes(value)
         self[self._defenseExp] = byteOne
         self[self._defenseExp + 1] = byteTwo
@@ -205,6 +215,8 @@ class Pokemon(object):
 
     @speedExp.setter
     def speedExp(self, value):
+        value = min(value, 0xFFFF)
+        value = max(value, 0)
         byteOne, byteTwo = self._sepBytes(value)
         self[self._speedExp] = byteOne
         self[self._speedExp + 1] = byteTwo
@@ -215,6 +227,8 @@ class Pokemon(object):
 
     @specialExp.setter
     def specialExp(self, value):
+        value = min(value, 0xFFFF)
+        value = max(value, 0)
         byteOne, byteTwo = self._sepBytes(value)
         self[self._specialExp] = byteOne
         self[self._specialExp + 1] = byteTwo
@@ -225,6 +239,8 @@ class Pokemon(object):
 
     @attackDv.setter
     def attackDv(self, value):
+        value = min(15, value)
+        value = max(0, value)
         byte = self.defenseDv + (value << 4)
         self[self._attackDv] = byte
 
@@ -234,6 +250,8 @@ class Pokemon(object):
 
     @defenseDv.setter
     def defenseDv(self, value):
+        value = min(15, value)
+        value = max(0, value)
         byte = (self.attackDv << 4) + value
         self[self._defenseDv] = byte
 
@@ -243,6 +261,8 @@ class Pokemon(object):
 
     @speedDv.setter
     def speedDv(self, value):
+        value = min(15, value)
+        value = max(0, value)
         byte = self.specialDv + (value << 4)
         self[self._speedDv] = byte
 
@@ -252,6 +272,8 @@ class Pokemon(object):
 
     @specialDv.setter
     def specialDv(self, value):
+        value = min(15, value)
+        value = max(0, value)
         byte = (self.speedDv << 4) + value
         self[self._specialDv] = byte
 

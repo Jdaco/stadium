@@ -256,9 +256,13 @@ class MainWidget(urwidgets.CommandFrame):
         # for convenience in meter setup
         def set_bar_value(func, bar):
             def inner(value_string):
-                value = int(value_string)
-                func(value)
-                bar.set_completion(value)
+                try:
+                    value = int(value_string)
+                except ValueError:
+                    self.change_status("Invalid Value")
+                else:
+                    func(value)
+                    bar.set_completion(value)
             return inner
 
         # column transition functions
