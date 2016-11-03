@@ -460,7 +460,7 @@ moves = {
     'endure': 0xcb,
     'charm': 0xcc,
     'rollout': 0xcd,
-    'false swipes': 0xce,
+    'false swipe': 0xce,
     'swagger': 0xcf,
     'milk drink': 0xd0,
     'spark': 0xd1,

@@ -8,10 +8,18 @@ import urwidgets
 import utility
 import mappers
 
+def capitalize_move(move):
+    if '-' in move:
+        return capwords(move, '-')
+    else:
+        return capwords(move)
 
 class MainWidget(urwidgets.CommandFrame):
     def __init__(self, buff):
         self.commands = {
+            'w': self.write,
+            'q': self.quit,
+            'q!': partial(self.quit, discard=True),
             'wq': utility.chain(self.write, self.quit),
             'quit': self.quit,
             'quit!': partial(self.quit, discard=True),
@@ -73,7 +81,7 @@ class MainWidget(urwidgets.CommandFrame):
 
         self.moveWidgets = [
             urwidgets.MappedWrap(
-                urwid.Text(capwords(move)),
+                urwid.Text(capitalize_move(move)),
                 attrmap='item',
                 focusmap='item_focus'
             )
@@ -287,9 +295,12 @@ class MainWidget(urwidgets.CommandFrame):
         def moves_set_move():
             index = self.currentMoveList.focus_position
             move = self.moveList.focus.text
-            poke = self.pokemon[self.pokeList.body.focus]
             self.setMove(move, index)
             moves_to_current()
+
+        def delete_current_move():
+            index = self.currentMoveList.focus_position
+            self.deleteMove(index)
 
         def start_searching(direction):
             current_list = self.columns.focus
@@ -447,6 +458,7 @@ class MainWidget(urwidgets.CommandFrame):
         self.currentMoveList.keymap['right'] = current_to_moves
         self.currentMoveList.keymap['h'] = current_to_poke
         self.currentMoveList.keymap['left'] = current_to_poke
+        self.currentMoveList.keymap['D'] = delete_current_move
 
         self.moveList.keymap['h'] = moves_to_current
         self.moveList.keymap['left'] = moves_to_current
@@ -729,6 +741,11 @@ class MainWidget(urwidgets.CommandFrame):
         poke = self.currentPokemon
         poke.happiness = happiness
 
+    def deleteMove(self, index):
+        poke = self.currentPokemon
+        poke.moves[index] = None
+        self.updateCenterColumn()
+
     def setMove(self, move, index):
         poke = self.currentPokemon
         if 'hidden power' in move.lower() and move.lower() != 'hidden power':
@@ -771,7 +788,7 @@ class MainWidget(urwidgets.CommandFrame):
                     '-----' if move is None else
                     'Hidden Power(%s)' % poke.hiddenPowerType
                     if move == 'hidden power'
-                    else capwords(move)
+                    else capitalize_move(move)
                 ),
                 attrmap='item',
                 focusmap='item_focus',
