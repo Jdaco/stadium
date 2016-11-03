@@ -41,9 +41,9 @@ class TestInnerLace:
 
         for index, item in enumerate(laced_iterable):
             if index % 2 == 0 and item is not iterable[index / 2]:
-                assert 0
+                pytest.fail("Item: ( %s ) at Index: ( %s ) does not match original item" % (repr(item), repr(index)))
             elif index % 2 == 1 and item is not lace:
-                assert 0
+                pytest.fail("Item: ( %s ) at Index: ( %s ) does not match lace item" % (repr(item), repr(index)))
         
 class TestChain:
     def test_order(self):
