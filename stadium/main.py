@@ -438,10 +438,14 @@ class MainWidget(urwidgets.CommandFrame):
         self.currentMoveList.keymap['j'] = self.currentMoveList.shiftDown
         self.currentMoveList.keymap['k'] = self.currentMoveList.shiftUp
         self.pokeList.keymap['l'] = poke_to_current
+        self.pokeList.keymap['right'] = poke_to_current
         self.currentMoveList.keymap['l'] = current_to_moves
+        self.currentMoveList.keymap['right'] = current_to_moves
         self.currentMoveList.keymap['h'] = current_to_poke
+        self.currentMoveList.keymap['left'] = current_to_poke
 
         self.moveList.keymap['h'] = moves_to_current
+        self.moveList.keymap['left'] = moves_to_current
         self.moveList.keymap['enter'] = moves_set_move
         self.moveList.keymap['j'] = self.moveList.shiftDown
         self.moveList.keymap['k'] = self.moveList.shiftUp
