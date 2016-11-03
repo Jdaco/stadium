@@ -52,7 +52,7 @@ class MainWidget(urwidgets.CommandFrame):
         #Replace hidden power with all types of hidden power
         hpIndex = moves.index('hidden power')
         self.moves = moves[:hpIndex] + [
-            'hidden power(%s)' % t.capitalize()
+            'hidden power(%s)' % t
             for t in sorted(maps.hidden_power.keys())
         ] + moves[hpIndex+1:]
 
@@ -726,9 +726,10 @@ class MainWidget(urwidgets.CommandFrame):
         if 'hidden power' in move.lower():
             t = move[13:move.index(')')]
             poke.hiddenPowerType = t
-        if move.lower() in self.moves:
+            move = 'hidden power'
+        if move.lower() in maps.moves:
             poke.moves[index] = move
-            self.updateMoves()
+            self.updateCenterColumn()
         else:
             self.change_status("Move not found")
 
