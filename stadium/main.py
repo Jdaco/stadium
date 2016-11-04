@@ -43,7 +43,7 @@ class MainWidget(urwidgets.CommandFrame):
 
         self.pokemon = tuple(self.buff.pokemon)
 
-        moves = sorted([
+        self.moves = sorted([
             key
             for key, value in
             maps.moves.iteritems()
@@ -56,13 +56,6 @@ class MainWidget(urwidgets.CommandFrame):
                 callback=self.setSpecies,
                 completion_set = maps.pokemon.keys(),
             )
-
-        #Replace hidden power with all types of hidden power
-        hpIndex = moves.index('hidden power')
-        self.moves = moves[:hpIndex] + [
-            'hidden power(%s)' % t
-            for t in sorted(maps.hidden_power.keys())
-        ] + moves[hpIndex+1:]
 
         # --- Create Widgets ---
         self.pokemonWidgets = [
@@ -137,6 +130,12 @@ class MainWidget(urwidgets.CommandFrame):
             self.base_speed,
         ])
 
+        self.hidden_power_field = urwidgets.MappedWrap(
+            ui.LeftRightWidget(" Hidden Power Type: ", ''),
+            attrmap='item', focusmap='item_active',
+            selectable=True
+        )
+
         self.level_meter = ui.LabeledMeter(
             'Level', 1, 100, 'progress', 'progress_red',
             initial=self.currentPokemon.level,
@@ -208,8 +207,10 @@ class MainWidget(urwidgets.CommandFrame):
                 self.currentMoveList,
                 urwid.Divider('-', top=1, bottom=1),
             ] + utility.inner_lace([
-                self.base_pile, urwid.AttrMap(
-                self.level_meter,
+                self.base_pile,
+                self.hidden_power_field,
+                urwid.AttrMap(
+                    self.level_meter,
                     'item', 'item_active'
                 ),
                 urwid.AttrMap(
@@ -274,6 +275,12 @@ class MainWidget(urwidgets.CommandFrame):
             return inner
 
         # column transition functions
+
+        def set_hidden_power():
+            def callback_handler(value):
+                self.setHiddenPower(value.lower())
+            self.start_editing(caption="Hidden Power Type: ", callback=callback_handler)
+
         def moves_to_current():
             self.currentMoveList.focus.attrmap = 'item'
             self.columns.focus_position = 1
@@ -473,6 +480,7 @@ class MainWidget(urwidgets.CommandFrame):
             self.moveList.shiftUp,
             amount=10
         )
+        self.hidden_power_field.keymap['enter'] = set_hidden_power
         self.moveList.keymap['/'] = lambda: start_searching('forward')
         self.moveList.keymap['?'] = lambda: start_searching('backward')
         self.moveList.keymap['n'] = self.searchNext
@@ -658,6 +666,7 @@ class MainWidget(urwidgets.CommandFrame):
         self.defense_dv_meter._set_completion(poke.defenseDv)
         self.speed_dv_meter._set_completion(poke.speedDv)
         self.special_dv_meter._set_completion(poke.specialDv)
+        self.hidden_power_field.setRight(poke.hiddenPowerType.capitalize() + " ")
         self.updateStats()
 
     def updateLeftColumn(self):
@@ -681,6 +690,14 @@ class MainWidget(urwidgets.CommandFrame):
         poke = self.currentPokemon
         self.hp_dv_meter.set_completion(poke.hpDv)
 
+    def setHiddenPower(self, value):
+        poke = self.currentPokemon
+        if value in maps.hidden_power:
+            poke.hiddenPowerType = value
+            self.updateCenterColumn()
+        else:
+            self.change_status('Invalid type')
+
     def setSpecies(self, species):
         poke = self.currentPokemon
         species = species.lower()
@@ -694,18 +711,13 @@ class MainWidget(urwidgets.CommandFrame):
     def setAttackDv(self, value):
         self.currentPokemon.attackDv = value
         self.updateHpDv()
-
         self.updateStats()
-        # Update moves to refresh hidden power
-        self.updateMoves()
 
     def setDefenseDv(self, value):
         self.currentPokemon.defenseDv = value
         self.updateHpDv()
 
         self.updateStats()
-        # Update moves to refresh hidden power
-        self.updateMoves()
 
     def setSpeedDv(self, value):
         self.currentPokemon.speedDv = value
@@ -748,10 +760,6 @@ class MainWidget(urwidgets.CommandFrame):
 
     def setMove(self, move, index):
         poke = self.currentPokemon
-        if 'hidden power' in move.lower() and move.lower() != 'hidden power':
-            t = move[13:move.index(')')]
-            poke.hiddenPowerType = t
-            move = 'hidden power'
         if move.lower() in maps.moves:
             poke.moves[index] = move
             self.updateCenterColumn()
@@ -785,9 +793,7 @@ class MainWidget(urwidgets.CommandFrame):
         return [
             urwidgets.MappedWrap(
                 urwid.Text(
-                    '-----' if move is None else
-                    'Hidden Power(%s)' % poke.hiddenPowerType
-                    if move == 'hidden power'
+                    '-----' if move is None
                     else capitalize_move(move)
                 ),
                 attrmap='item',
