@@ -67,7 +67,7 @@ def scroll(collection, initial=0):
     if len(collection) == 0:
         raise ValueError("Collection cannot be empty")
     if initial < 0 or initial > len(collection):
-        raise IndexError(
+        raise IndexError("Initial index is out of bounds")
     max_length = len(collection) - 1
     index = initial
     while True:
