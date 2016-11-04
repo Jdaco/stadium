@@ -47,7 +47,7 @@ def chain(*args):
             arg()
     return inner
 
-# Decorator that adds caching to coroutine
+# Decorator that returns last value if no args
 def cached_coroutine(func):
     cache = {}
     def inner(*args, **kwargs):
@@ -64,6 +64,10 @@ def cached_coroutine(func):
 # Scrollbar Functionality - Inputs change the position in a collection
 @cached_coroutine
 def scroll(collection, initial=0):
+    if len(collection) == 0:
+        raise ValueError("Collection cannot be empty")
+    if initial < 0 or initial > len(collection):
+        raise IndexError(
     max_length = len(collection) - 1
     index = initial
     while True:

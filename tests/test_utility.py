@@ -183,3 +183,133 @@ class TestComplete:
         sut = utility.complete(iterable, start_string)
         
         assert sut == 'alph'
+
+class TestCachedCoroutine:
+    def test_starts_coroutine(self):
+        # Creating the generator should call next() on coroutine
+        a = []
+        def coroutine():
+            a.append('yes')
+            recieved = (yield 'no')
+
+        # Simulates decorator
+        sut = utility.cached_coroutine(coroutine)
+        # Creates generator
+        sut()
+
+        assert a[0] == 'yes'
+
+    def test_no_args_cached(self):
+        # Sending no args to coroutine should return last returned value
+        def coroutine():
+            recieved = None
+            while True:
+                recieved = (yield recieved)
+
+        func = utility.cached_coroutine(coroutine)
+        sut = func()
+        sut(10)
+        sut(20)
+        sut(30)
+        value = sut()
+
+        assert value == 30
+
+    def test_same_value_keeps_calling(self):
+        # Sending the same value multiple times should still run routine, no return cached
+        a = []
+        def coroutine():
+            recieved = None
+            while True:
+                recieved = (yield recieved)
+                a.append(recieved)
+
+        func = utility.cached_coroutine(coroutine)
+        sut = func()
+        sut(10)
+        sut(10)
+        sut(10)
+        sut(10)
+        sut(10)
+
+        assert len(a) == 5
+        assert len(set(a)) == 1
+        assert set(a).pop() == 10
+
+
+class TestScroll:
+    def test_empty_exception(self):
+        # Function throws ValueError on empty collection
+        collection = []
+
+        with pytest.raises(ValueError):
+            sut = utility.scroll(collection, 0)
+
+    def test_single_item_never_changes(self):
+        # With a single-item-collection it should always be on that item
+        collection = (0,)
+        sut = utility.scroll(collection, 0)
+
+        sut(-10)
+        sut(5)
+        value = sut()
+
+        assert value == collection[0]
+
+    def test_starts_at_initial(self):
+        # The 2nd parameter determines the staring position
+        collection = range(10)
+        initial = 5
+        sut = utility.scroll(collection, initial)
+
+        value = sut()
+
+        assert value == collection[initial]
+
+    def test_initial_above_max(self):
+        # Initial > len(collection) should raise IndexError
+        collection = range(10)
+        
+        with pytest.raises(IndexError):
+            sut = utility.scroll(collection, 20)
+
+    def test_initial_below_zero(self):
+        # Intial < 0 should raise IndexError
+        collection = range(10)
+
+        with pytest.raises(IndexError):
+            sut = utility.scroll(collection, -20)
+
+    def test_check_position(self):
+        # After sending movement, position should change
+        collection = range(10)
+        sut = utility.scroll(collection, 0)
+
+        sut(5)
+        value = sut()
+
+        assert value == collection[5]
+
+    def test_scroll_past_bottom(self):
+        # Input past the first item should stay at the first item
+        collection = range(10)
+        initial = 0
+        sut = utility.scroll(collection, initial)
+
+        value = sut(-20)
+
+        assert value == 0
+
+    def test_scroll_past_top(self):
+        # Inputting past the last item should stay at the last item
+        collection = range(10)
+        initial = 0
+        sut = utility.scroll(collection, initial)
+
+        value = sut(20)
+
+        assert value == 9
+
+
+
+
