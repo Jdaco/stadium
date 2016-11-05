@@ -132,7 +132,7 @@ class MainWidget(urwidgets.CommandFrame):
 
         self.hidden_power_field = urwidgets.MappedWrap(
             ui.LeftRightWidget(" Hidden Power Type: ", ''),
-            attrmap='item', focusmap='item_active',
+            attrmap='item', focusmap='item_focus',
             selectable=True
         )
 
@@ -190,17 +190,6 @@ class MainWidget(urwidgets.CommandFrame):
             initial=self.currentPokemon.specialDv,
             selectable=False
         )
-        urwid.connect_signal(self.level_meter, 'shift', self.setLevel)
-        urwid.connect_signal(self.happiness_meter, 'shift', self.setHappiness)
-        urwid.connect_signal(self.hp_exp_meter, 'shift', self.setHpExp)
-        urwid.connect_signal(self.attack_exp_meter, 'shift', self.setAttackExp)
-        urwid.connect_signal(self.defense_exp_meter, 'shift', self.setDefenseExp)
-        urwid.connect_signal(self.speed_exp_meter, 'shift', self.setSpeedExp)
-        urwid.connect_signal(self.special_exp_meter, 'shift', self.setSpecialExp)
-        urwid.connect_signal(self.attack_dv_meter, 'shift', self.setAttackDv)
-        urwid.connect_signal(self.defense_dv_meter, 'shift', self.setDefenseDv)
-        urwid.connect_signal(self.speed_dv_meter, 'shift', self.setSpeedDv)
-        urwid.connect_signal(self.special_dv_meter, 'shift', self.setSpecialDv)
 
         self.centerPile = urwidgets.MappedPile(
             [
@@ -261,6 +250,21 @@ class MainWidget(urwidgets.CommandFrame):
             constraint=lambda x, y: y.selectable()
         )
 
+        hidden_power_widgets = [
+            urwidgets.MappedWrap(
+                urwid.Text(capitalize_move(t)),
+                attrmap='item',
+                focusmap='item_focus'
+            )
+            for t in sorted(maps.hidden_power.keys())
+        ]
+
+        self.hidden_power_list = urwidgets.MappedList(
+            urwid.SimpleListWalker(hidden_power_widgets)
+        )
+
+
+
         # --- Actions for Key Mapping ---
         # for convenience in meter setup
         def set_bar_value(func, bar):
@@ -276,11 +280,6 @@ class MainWidget(urwidgets.CommandFrame):
 
         # column transition functions
 
-        def set_hidden_power():
-            def callback_handler(value):
-                self.setHiddenPower(value.lower())
-            self.start_editing(caption="Hidden Power Type: ", callback=callback_handler)
-
         def moves_to_current():
             self.currentMoveList.focus.attrmap = 'item'
             self.columns.focus_position = 1
@@ -288,6 +287,7 @@ class MainWidget(urwidgets.CommandFrame):
         def current_to_poke():
             self.pokeList.focus.attrmap = 'item'
             self.columns.focus_position = 0
+            self.columns.widget_list[2] = self.moveList
 
         def poke_to_current():
             self.pokeList.focus.attrmap = 'item_active'
@@ -308,6 +308,26 @@ class MainWidget(urwidgets.CommandFrame):
         def delete_current_move():
             index = self.currentMoveList.focus_position
             self.deleteMove(index)
+
+        def check_hidden_power_focus():
+            focus = self.centerPile.focus
+            if self.hidden_power_field is focus:
+                self.columns.widget_list[2] = urwid.AttrMap(self.hidden_power_list, 'item')
+            else:
+                self.columns.widget_list[2] = self.moveList
+
+        def hidden_power_to_types():
+            self.hidden_power_field.attrmap = 'item_active'
+            self.columns.focus_position = 2
+
+        def types_to_hidden_power():
+            self.hidden_power_field.attrmap = 'item'
+            self.columns.focus_position = 1
+
+        def set_hidden_power():
+            value = self.hidden_power_list.focus.text
+            self.setHiddenPower(value.lower())
+            types_to_hidden_power()
 
         def start_searching(direction):
             current_list = self.columns.focus
@@ -350,6 +370,21 @@ class MainWidget(urwidgets.CommandFrame):
                 backspace_handler,
                 self.command_line.keymap['backspace'],
             )
+
+
+        # Connect signals
+        urwid.connect_signal(self.level_meter, 'shift', self.setLevel)
+        urwid.connect_signal(self.happiness_meter, 'shift', self.setHappiness)
+        urwid.connect_signal(self.hp_exp_meter, 'shift', self.setHpExp)
+        urwid.connect_signal(self.attack_exp_meter, 'shift', self.setAttackExp)
+        urwid.connect_signal(self.defense_exp_meter, 'shift', self.setDefenseExp)
+        urwid.connect_signal(self.speed_exp_meter, 'shift', self.setSpeedExp)
+        urwid.connect_signal(self.special_exp_meter, 'shift', self.setSpecialExp)
+        urwid.connect_signal(self.attack_dv_meter, 'shift', self.setAttackDv)
+        urwid.connect_signal(self.defense_dv_meter, 'shift', self.setDefenseDv)
+        urwid.connect_signal(self.speed_dv_meter, 'shift', self.setSpeedDv)
+        urwid.connect_signal(self.special_dv_meter, 'shift', self.setSpecialDv)
+        urwid.connect_signal(self.centerPile, 'shift', check_hidden_power_focus)
 
         # --- Key Mappings ---
         self.level_meter.keymap['enter'] = (
@@ -480,7 +515,6 @@ class MainWidget(urwidgets.CommandFrame):
             self.moveList.shiftUp,
             amount=10
         )
-        self.hidden_power_field.keymap['enter'] = set_hidden_power
         self.moveList.keymap['/'] = lambda: start_searching('forward')
         self.moveList.keymap['?'] = lambda: start_searching('backward')
         self.moveList.keymap['n'] = self.searchNext
@@ -504,6 +538,15 @@ class MainWidget(urwidgets.CommandFrame):
         self.pokeList.keymap['N'] = self.searchPrev
         self.pokeList.keymap['g'] = self.pokeList.top
         self.pokeList.keymap['G'] = self.pokeList.bottom
+
+        self.hidden_power_field.keymap['l'] = hidden_power_to_types
+
+        self.hidden_power_list.keymap['j'] = self.hidden_power_list.shiftDown
+        self.hidden_power_list.keymap['k'] = self.hidden_power_list.shiftUp
+        self.hidden_power_list.keymap['g'] = self.hidden_power_list.top
+        self.hidden_power_list.keymap['G'] = self.hidden_power_list.bottom
+        self.hidden_power_list.keymap['h'] = types_to_hidden_power
+        self.hidden_power_list.keymap['enter'] = set_hidden_power
 
         self.centerPile.keymap['j'] = self.centerPile.shiftDown
         self.centerPile.keymap['k'] = self.centerPile.shiftUp
