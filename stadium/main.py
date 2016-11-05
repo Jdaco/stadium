@@ -692,6 +692,7 @@ class MainWidget(urwidgets.CommandFrame):
         self.base_satt.setRight(str(poke.spattack) + " ")
         self.base_sdef.setRight(str(poke.spdefense) + " ")
         self.base_speed.setRight(str(poke.speed) + " ")
+        self.hidden_power_field.setRight(poke.hiddenPowerType.capitalize() + " ")
 
     def updateCenterColumn(self):
         self.updateMoves()
@@ -708,7 +709,6 @@ class MainWidget(urwidgets.CommandFrame):
         self.defense_dv_meter._set_completion(poke.defenseDv)
         self.speed_dv_meter._set_completion(poke.speedDv)
         self.special_dv_meter._set_completion(poke.specialDv)
-        self.hidden_power_field.setRight(poke.hiddenPowerType.capitalize() + " ")
         self.updateStats()
 
     def updateLeftColumn(self):
