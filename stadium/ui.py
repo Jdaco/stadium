@@ -2,6 +2,71 @@ import urwid
 import urwidgets
 import utility
 
+class ListDialogController(object):
+    def __init__(self, dialog, cancel, select):
+        self._widget = dialog
+        self._cancel_func = cancel
+        self._select_func = select
+
+    def cancel(self):
+        self._cancel_func()
+
+    def enter(self, value):
+        self._select_func(value)
+
+class ListDialog(urwid.Overlay):
+    def __init__(self, widgets, bottom_widget, cancel, select):
+        self.controller = ListDialogController(
+            self, cancel, select
+        )
+
+        self.cancel = urwidgets.MappedWrap(
+            urwid.Text('Cancel'),
+            'item', 'item_active',
+        )
+        self.cancel.keymap['enter'] = self.controller.cancel
+
+        self._option_list = urwidgets.MappedPile(
+            widgets
+        )
+
+        def selected_value():
+            value = self._option_list.focus.text
+            self.controller.enter(value)
+
+        self._option_list.keymap['enter'] = selected_value
+
+
+        self.pile = urwidgets.MappedPile(
+            [self._option_list,
+            urwid.Divider('-'),
+            self.cancel]
+        )
+
+        lb = urwid.LineBox(self.pile)
+
+        urwid.connect_signal(self._option_list, 'bottom', self.pile.shiftDown)
+
+        super(ListDialog, self).__init__(lb, bottom_widget, 'center', 10, 'middle', 'pack')
+
+    def shiftTop(self):
+        self._option_list.top()
+        self.pile.top()
+
+    def shiftBottom(self):
+        self._option_list.bottom()
+        self.pile.bottom()
+
+    def shiftUp(self):
+        if self.cancel is self.pile.focus:
+            self.pile.shiftUp()
+        else:
+            self._option_list.shiftUp()
+        self.pile.shiftUp()
+
+    def shiftDown(self):
+        self._option_list.shiftDown()
+
 class LeftRightLayout(urwid.TextLayout):
     def __init__(self, left, right):
         self.left = len(left)

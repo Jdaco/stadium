@@ -190,6 +190,8 @@ class MainWidget(urwidgets.CommandFrame):
             initial=self.currentPokemon.specialDv,
             selectable=False
         )
+
+
         urwid.connect_signal(self.level_meter, 'shift', self.setLevel)
         urwid.connect_signal(self.happiness_meter, 'shift', self.setHappiness)
         urwid.connect_signal(self.hp_exp_meter, 'shift', self.setHpExp)
@@ -260,6 +262,12 @@ class MainWidget(urwidgets.CommandFrame):
             ], urwid.Divider(' ')),
             constraint=lambda x, y: y.selectable()
         )
+        self.columns = urwid.Columns([
+                self.pokeList,
+                urwid.Filler(self.centerPile, valign='top'),
+                self.moveList
+        ])
+
 
         # --- Actions for Key Mapping ---
         # for convenience in meter setup
@@ -276,10 +284,29 @@ class MainWidget(urwidgets.CommandFrame):
 
         # column transition functions
 
+        
+
+        def hidden_power_cancel():
+            self.body = self.columns
+
+        def hidden_power_select(value):
+            self.setHiddenPower(value)
+            hidden_power_cancel()
+
+        self.types_list = [
+            urwidgets.MappedWrap(
+                urwid.Text(t),
+                'item', 'item_active',
+            )
+            for t in 
+            maps.hidden_power.keys() 
+        ]
+        self.hidden_power_dialog = urwidgets.MappedWrap(
+            ui.ListDialog(self.types_list, self.columns, hidden_power_cancel, hidden_power_select)
+        )
+
         def set_hidden_power():
-            def callback_handler(value):
-                self.setHiddenPower(value.lower())
-            self.start_editing(caption="Hidden Power Type: ", callback=callback_handler)
+            self.body = self.hidden_power_dialog
 
         def moves_to_current():
             self.currentMoveList.focus.attrmap = 'item'
@@ -510,12 +537,10 @@ class MainWidget(urwidgets.CommandFrame):
         self.centerPile.keymap['g'] = self.centerPile.top
         self.centerPile.keymap['G'] = self.centerPile.bottom
         self.centerPile.keymap['h'] = current_to_poke
-
-        self.columns = urwid.Columns([
-                self.pokeList,
-                urwid.Filler(self.centerPile, valign='top'),
-                self.moveList
-        ])
+        self.hidden_power_dialog.keymap['j'] = self.hidden_power_dialog.shiftDown
+        self.hidden_power_dialog.keymap['k'] = self.hidden_power_dialog.shiftUp
+        self.hidden_power_dialog.keymap['g'] = self.hidden_power_dialog.shiftTop
+        self.hidden_power_dialog.keymap['G'] = self.hidden_power_dialog.shiftBottom
 
         self.updateCenterColumn()
 
