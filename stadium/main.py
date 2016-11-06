@@ -130,6 +130,12 @@ class MainWidget(urwidgets.CommandFrame):
             selectable=True
         )
 
+        self.hidden_power_damage = urwidgets.MappedWrap(
+            ui.LeftRightWidget(" Hidden Power Damage: ", ''),
+            attrmap='item', focusmap='item_focus',
+            selectable=False
+        )
+
         self.level_meter = ui.LabeledMeter(
             'Level', 1, 100, 'progress', 'progress_red',
             initial=self.currentPokemon.level,
@@ -191,6 +197,7 @@ class MainWidget(urwidgets.CommandFrame):
             ] + utility.inner_lace([
                 self.base_pile,
                 self.hidden_power_field,
+                self.hidden_power_damage,
                 urwid.AttrMap(
                     self.level_meter,
                     'item', 'item_active'
@@ -687,22 +694,23 @@ class MainWidget(urwidgets.CommandFrame):
         self.base_sdef.setRight(str(poke.spdefense) + " ")
         self.base_speed.setRight(str(poke.speed) + " ")
         self.hidden_power_field.setRight(poke.hiddenPowerType.capitalize() + " ")
+        self.hidden_power_damage.setRight(str(poke.hiddenPowerDamage) + " ")
 
     def updateCenterColumn(self):
         self.updateMoves()
         poke = self.currentPokemon
-        self.level_meter._set_completion(poke.level)
-        self.happiness_meter._set_completion(poke.happiness)
-        self.attack_exp_meter._set_completion(poke.attackExp)
-        self.hp_exp_meter._set_completion(poke.hpExp)
-        self.defense_exp_meter._set_completion(poke.defenseExp)
-        self.speed_exp_meter._set_completion(poke.speedExp)
-        self.special_exp_meter._set_completion(poke.specialExp)
+        self.level_meter.set_completion(poke.level)
+        self.happiness_meter.set_completion(poke.happiness)
+        self.attack_exp_meter.set_completion(poke.attackExp)
+        self.hp_exp_meter.set_completion(poke.hpExp)
+        self.defense_exp_meter.set_completion(poke.defenseExp)
+        self.speed_exp_meter.set_completion(poke.speedExp)
+        self.special_exp_meter.set_completion(poke.specialExp)
         self.updateHpDv()
-        self.attack_dv_meter._set_completion(poke.attackDv)
-        self.defense_dv_meter._set_completion(poke.defenseDv)
-        self.speed_dv_meter._set_completion(poke.speedDv)
-        self.special_dv_meter._set_completion(poke.specialDv)
+        self.attack_dv_meter.set_completion(poke.attackDv)
+        self.defense_dv_meter.set_completion(poke.defenseDv)
+        self.speed_dv_meter.set_completion(poke.speedDv)
+        self.special_dv_meter.set_completion(poke.specialDv)
         self.updateStats()
 
     def updateLeftColumn(self):

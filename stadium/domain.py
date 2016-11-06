@@ -81,7 +81,6 @@ class Moveset(object):
             for i in xrange(0, 4)
         )
 
-
 class Pokemon(object):
     # Each pokemon is 24 bytes long
     _level = 0
@@ -117,8 +116,8 @@ class Pokemon(object):
         )
 
     def _statCalc(self, base, dv, se):
-        sp = min(63, (int(math.sqrt(max(0, se - 1))) + 1) / 4)
-        return (((2 * (base + dv) + sp) * self.level) / 100) + 5
+        sp = min(63, int(math.sqrt(max(0, se))) / 4)
+        return (((2 * (base + dv) + sp) * self.level) / 100)
 
     def max(self):
         self.level = 100
@@ -145,6 +144,17 @@ class Pokemon(object):
         attack, defense = maps.hidden_power[value]
         self.attackDv = self.attackDv + (attack - (self.attackDv % 4))
         self.defenseDv = self.defenseDv + (defense - (self.defenseDv % 4))
+
+    @property
+    def hiddenPowerDamage(self):
+        v = (self.specialDv & 8) % 7
+        w = (self.speedDv & 8) % 7
+        x = (self.defenseDv & 8) % 7
+        y = (self.attackDv & 8) % 7
+        z = self.specialDv % 4
+
+        value = ((5 * (v + 2*w + 4*x + 8*y) + z) / 2) + 31
+        return value
 
     @property
     def species(self):
@@ -291,7 +301,7 @@ class Pokemon(object):
             self.buff.baseStats(self.species)['hp'],
             self.hpDv,
             self.hpExp,
-        ) + self.level + 5
+        ) + self.level + 10
 
     @property
     def attack(self):
@@ -299,7 +309,7 @@ class Pokemon(object):
             self.buff.baseStats(self.species)['attack'],
             self.attackDv,
             self.attackExp,
-        )
+        ) + 5
 
     @property
     def defense(self):
@@ -307,7 +317,7 @@ class Pokemon(object):
             self.buff.baseStats(self.species)['defense'],
             self.defenseDv,
             self.defenseExp,
-        )
+        ) + 5
 
     @property
     def spattack(self):
@@ -315,7 +325,7 @@ class Pokemon(object):
             self.buff.baseStats(self.species)['sattack'],
             self.specialDv,
             self.specialExp,
-        )
+        ) + 5
 
     @property
     def spdefense(self):
@@ -323,7 +333,7 @@ class Pokemon(object):
             self.buff.baseStats(self.species)['sdefense'],
             self.specialDv,
             self.specialExp,
-        )
+        ) + 5
 
     @property
     def speed(self):
@@ -331,4 +341,4 @@ class Pokemon(object):
             self.buff.baseStats(self.species)['speed'],
             self.speedDv,
             self.speedExp,
-        )
+        ) + 5
