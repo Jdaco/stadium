@@ -83,6 +83,7 @@ class Moveset(object):
 
 
 class Pokemon(object):
+    # Each pokemon is 24 bytes long
     _level = 0
     _species = 1
     _moveStart = 4
@@ -121,16 +122,16 @@ class Pokemon(object):
 
     def max(self):
         self.level = 100
-        self.happiness = 2**8 - 1
-        self.hpExp = 2**16 - 1
-        self.attackExp = 2**16 - 1
-        self.defenseExp = 2**16 - 1
-        self.specialExp = 2**16 - 1
-        self.speedExp = 2**16 - 1
-        self.attackDv = 2**4 - 1
-        self.defenseDv = 2**4 - 1
-        self.specialDv = 2**4 - 1
-        self.speedDv = 2 ** 4 - 1
+        self.happiness = 0xFF
+        self.hpExp = 0xFFFF
+        self.attackExp = 0xFFFF
+        self.defenseExp = 0xFFFF
+        self.specialExp = 0xFFFF
+        self.speedExp = 0xFFFF
+        self.attackDv = 0xF
+        self.defenseDv = 0xF
+        self.specialDv = 0xF
+        self.speedDv = 0xF
 
     @property
     def hiddenPowerType(self):
@@ -160,7 +161,7 @@ class Pokemon(object):
     @level.setter
     def level(self, value):
         value = min(value, 100)
-        value = max(value, 0)
+        value = max(value, 1)
         self[self._level] = value
 
     @property

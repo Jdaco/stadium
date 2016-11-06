@@ -311,5 +311,42 @@ class TestScroll:
         assert value == 9
 
 
+class TestCapitalizeMove:
+    def test_one_word(self):
+        string = 'thunderwave'
+        
+        sut = utility.capitalize_move(string)
+
+        assert sut == 'Thunderwave'
+
+    def test_hypen(self):
+        string = 'thunder-wave'
+        
+        sut = utility.capitalize_move(string)
+
+        assert sut == 'Thunder-Wave'
+
+    def test_multiple_words(self):
+        string = 'thunder wave'
+        
+        sut = utility.capitalize_move(string)
+
+        assert sut == 'Thunder Wave'
+
+    def test_empty_string(self):
+        string = ''
+        
+        sut = utility.capitalize_move(string)
+
+        assert sut == ''
+
+    def test_all_caps(self):
+        string = 'THUNDERWAVE'
+        
+        sut = utility.capitalize_move(string)
+
+        assert sut == 'Thunderwave'
+
+
 
 

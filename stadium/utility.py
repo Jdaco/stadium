@@ -1,4 +1,5 @@
 import itertools
+from string import capwords
 
 # String Completion
 def complete(iterable, start_string):
@@ -77,3 +78,11 @@ def scroll(collection, initial=0):
             index = 0
         elif index > max_length:
             index = max_length
+
+
+# Capitalize Moves - Capitalize each work separated by space or hypen
+def capitalize_move(move):
+    if '-' in move:
+        return capwords(move, '-')
+    else:
+        return capwords(move)

@@ -1,5 +1,4 @@
 from functools import partial
-from string import capwords
 import urwid
 import ui
 import maps
@@ -8,11 +7,6 @@ import urwidgets
 import utility
 import mappers
 
-def capitalize_move(move):
-    if '-' in move:
-        return capwords(move, '-')
-    else:
-        return capwords(move)
 
 class MainWidget(urwidgets.CommandFrame):
     def __init__(self, buff):
@@ -74,7 +68,7 @@ class MainWidget(urwidgets.CommandFrame):
 
         self.moveWidgets = [
             urwidgets.MappedWrap(
-                urwid.Text(capitalize_move(move)),
+                urwid.Text(utility.capitalize_move(move)),
                 attrmap='item',
                 focusmap='item_focus'
             )
@@ -147,27 +141,27 @@ class MainWidget(urwidgets.CommandFrame):
         self.attack_exp_meter = ui.LabeledMeter(
             'Attack Exp.', 0, 65535, 'progress', 'progress_blue',
             initial=self.currentPokemon.attackExp,
-            shiftAmount=100,
+            shift_amount=100,
         )
         self.hp_exp_meter = ui.LabeledMeter(
             'HP Exp.', 0, 65535, 'progress', 'progress_blue',
             initial=self.currentPokemon.hpExp,
-            shiftAmount=100,
+            shift_amount=100,
         )
         self.defense_exp_meter = ui.LabeledMeter(
             'Defense Exp.', 0, 65535, 'progress', 'progress_blue',
             initial=self.currentPokemon.defenseExp,
-            shiftAmount=100,
+            shift_amount=100,
         )
         self.speed_exp_meter = ui.LabeledMeter(
             'Speed Exp.', 0, 65535, 'progress', 'progress_blue',
             initial=self.currentPokemon.speedExp,
-            shiftAmount=100,
+            shift_amount=100,
         )
         self.special_exp_meter = ui.LabeledMeter(
             'Special Exp.', 0, 65535, 'progress', 'progress_blue',
             initial=self.currentPokemon.specialExp,
-            shiftAmount=100,
+            shift_amount=100,
         )
         self.attack_dv_meter = ui.LabeledMeter(
             'Attack DV.', 0, 15, 'progress', 'progress_cyan',
@@ -251,7 +245,7 @@ class MainWidget(urwidgets.CommandFrame):
 
         hidden_power_widgets = [
             urwidgets.MappedWrap(
-                urwid.Text(capitalize_move(t)),
+                urwid.Text(utility.capitalize_move(t)),
                 attrmap='item',
                 focusmap='item_focus'
             )
@@ -836,7 +830,7 @@ class MainWidget(urwidgets.CommandFrame):
             urwidgets.MappedWrap(
                 urwid.Text(
                     '-----' if move is None
-                    else capitalize_move(move)
+                    else utility.capitalize_move(move)
                 ),
                 attrmap='item',
                 focusmap='item_focus',

@@ -97,14 +97,46 @@ class LeftRightWidget(urwid.WidgetWrap):
         self.textWidget.set_text("%s%s" % (self.left_string, string))
 
     def setLeft(self, string):
-        pass
+        raise NotImplementedError
+
+
+class LabeledMeterController(object):
+    def __init__(self, widget, left_bound, right_bound, initial, shift_amount):
+        self._widget = widget
+        self.left_bound = left_bound
+        self.right_bound = right_bound
+        self.shift_amount = shift_amount
+
+        self.scroll = utility.scroll(xrange(left_bound, right_bound + 1), initial - left_bound)
+
+    def decrement(self, amount):
+        current_value = self.scroll()
+        new_value = self.scroll(-amount * self.shift_amount)
+        if current_value != new_value:
+            self._widget._set_completion(new_value)
+
+    def increment(self, amount):
+        current_value = self.scroll()
+        new_value = self.scroll(amount * self.shift_amount)
+        if current_value != new_value:
+            self._widget._set_completion(new_value)
+
+    def set_completion(self, completion):
+        current = self.scroll(completion - self.scroll())
+        self._widget._set_completion(current)
 
 
 class LabeledMeter(urwid.WidgetWrap):
     def __init__(self, label, left_bound, right_bound,
                  normal, complete,
-                 initial=0, shiftAmount=1,
+                 initial=0, shift_amount=1,
                  selectable=True, keymap={}):
+
+        self.controller = LabeledMeterController(
+            self,
+            left_bound, right_bound,
+            initial, shift_amount
+        )
         self.progress = urwid.ProgressBar(
             normal, complete,
             current=initial,
@@ -113,9 +145,6 @@ class LabeledMeter(urwid.WidgetWrap):
 
         self.keymap = dict(keymap)
         self._s = selectable
-        self.shiftAmount = shiftAmount
-
-        self.scroll = utility.scroll(xrange(left_bound, right_bound + 1), initial - left_bound)
 
         self.label = LeftRightWidget(label, str(self.progress.current))
 
@@ -133,24 +162,17 @@ class LabeledMeter(urwid.WidgetWrap):
         return key
 
     def decrement(self, amount=1):
-        if self.progress.current != self.scroll(-amount * self.shiftAmount):
-            self.progress.set_completion(self.scroll())
-            self.label.setRight(str(self.progress.current))
-            urwid.emit_signal(self, 'shift', self.progress.current)
+        self.controller.decrement(amount)
 
     def increment(self, amount=1):
-        if self.progress.current != self.scroll(amount * self.shiftAmount):
-            self.progress.set_completion(self.scroll())
-            self.label.setRight(str(self.progress.current))
-            urwid.emit_signal(self, 'shift', self.progress.current)
+        self.controller.increment(amount)
 
     def _set_completion(self, completion):
-        current = self.scroll(completion - self.scroll())
-        self.progress.set_completion(current)
-        self.label.setRight(str(current))
+        self.progress.set_completion(completion)
+        self.label.setRight(str(completion))
+        urwid.emit_signal(self, 'shift', completion)
         
     def set_completion(self, completion):
-        self._set_completion(completion)
-        urwid.emit_signal(self, 'shift', completion)
+        self.controller.set_completion(completion)
 
 urwid.register_signal(LabeledMeter, 'shift')
