@@ -1,5 +1,6 @@
 #!/usr/bin/python2
-from stadium.domain import Pokemon
+import stadium.maps as maps
+from stadium.domain import Pokemon, Moveset
 import pytest
 from mock import patch, Mock, MagicMock
 
@@ -246,3 +247,52 @@ class TestPokemon:
 
         assert value == 32
 
+class TestMoveset:
+    def setup_method(self):
+        self.moves = [10, 20, 30, 40]
+        self.buff = BufferMock( self.moves )
+        self.sut = Moveset(self.buff, 0)
+
+    def test_getitem_normal(self):
+        index = 2
+        move_name = 'fake move'
+        maps.moves_reversed[
+            self.moves[
+                index
+            ]
+        ] = move_name
+        value = self.sut[index]
+
+        assert value == move_name
+
+    def test_getitem_below_zero(self):
+        with pytest.raises(IndexError):
+            value = self.sut[-1]
+
+    def test_getitem_above_three(self):
+        with pytest.raises(IndexError):
+            value = self.sut[4]
+
+    def test_setitem_normal(self):
+        index = 2
+        move_name = 'fake_move'
+        move_value = 123
+        maps.moves[move_name] = move_value
+
+        self.sut[index] = move_name
+
+        assert self.buff[index] == move_value
+        
+    def test_setitem_below_zero(self):
+        with pytest.raises(IndexError):
+            self.sut[-1] = 'psychic'
+
+    def test_setitem_above_three(self):
+        with pytest.raises(IndexError):
+            self.sut[4] = 'psychic'
+
+    def test_setitem_invalid_move(self):
+        with pytest.raises(ValueError):
+            self.sut[0] = 'not a move'
+
+    

@@ -49,7 +49,7 @@ class ROMBuffer(object):
 
 
 class Moveset(object):
-    def __init__(self, addr, buff):
+    def __init__(self, buff, addr):
         self.addr = addr
         self.buff = buff
 
@@ -63,7 +63,7 @@ class Moveset(object):
 
     def __getitem__(self, index):
         if index > 3 or index < 0:
-            raise ValueError("Invalid index")
+            raise IndexError("Invalid index")
         byte = self.buff[self.addr + index]
         if byte == 0:
             return None
@@ -71,7 +71,9 @@ class Moveset(object):
 
     def __setitem__(self, index, value):
         if index > 3 or index < 0:
-            raise ValueError("Invalid index")
+            raise IndexError("Invalid index")
+        elif value is not None and value.lower() not in maps.moves:
+            raise ValueError("Invalud Move")
         move = maps.moves[value.lower()] if value is not None else 0
         self.buff[self.addr + index] = move
 
@@ -80,6 +82,7 @@ class Moveset(object):
             self[i]
             for i in xrange(0, 4)
         )
+
 
 class Pokemon(object):
     # Each pokemon is 24 bytes long
@@ -100,7 +103,7 @@ class Pokemon(object):
     def __init__(self, buff, addr):
         self.buff = buff
         self.addr = addr
-        self.moves = Moveset(addr + self._moveStart, buff)
+        self.moves = Moveset(buff, addr + self._moveStart)
 
     def __getitem__(self, index):
         return self.buff[self.addr + index] 
@@ -155,6 +158,7 @@ class Pokemon(object):
 
         value = ((5 * (v + 2*w + 4*x + 8*y) + z) / 2) + 31
         return value
+
 
     @property
     def species(self):
