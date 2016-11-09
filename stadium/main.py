@@ -8,9 +8,13 @@ import utility
 import mappers
 
 
+class MainWidgetController(object):
+    def __init__(self):
+        pass
+
 class MainWidget(urwidgets.CommandFrame):
     def __init__(self, rom_file):
-        self.commands = {
+        commands = {
             'w': self.write,
             'q': self.quit,
             'q!': partial(self.quit, discard=True),
@@ -566,7 +570,7 @@ class MainWidget(urwidgets.CommandFrame):
             urwid.Text('%s\n' % self.rom_file.fname, align='center'),
             'buffername', 'buffername',
         )
-        super(MainWidget, self).__init__(self.columns, header=fname_widget)
+        super(MainWidget, self).__init__(self.columns, header=fname_widget, commands=commands)
 
     def edit_file(self, fname, discard=False):
         if self.rom_file.dirty and not discard:

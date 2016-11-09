@@ -42,6 +42,10 @@ class ROMFile(object):
 
         self.dirty = False
 
+    @property
+    def fname(self):
+        return str(self.file)
+
     def write(self, fname=None):
         if fname:
             path.local(fname).write_binary(self.buffer.binary)
@@ -86,7 +90,7 @@ class ROMBuffer(object):
         pass
 
     def __init__(self, byte_array):
-        self.binary = byte_array
+        self.binary = bytearray(byte_array)
 
     def baseStats(self, species):
         index = self._base + 22 * (maps.pokemon[species] - 1)

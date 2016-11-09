@@ -12,6 +12,7 @@ setup_args = dict(
     install_requires=[
         'urwid',
         'urwidgets>=0.2',
+        'py>=1.4.31'
     ],
     packages=["stadium", "stadium.mappers"],
     scripts=["bin/stadium"],
