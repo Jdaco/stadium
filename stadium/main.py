@@ -2,14 +2,14 @@ from functools import partial
 import urwid
 import ui
 import maps
-import domain
+from domain import ROMFile
 import urwidgets
 import utility
 import mappers
 
 
 class MainWidget(urwidgets.CommandFrame):
-    def __init__(self, buff):
+    def __init__(self, rom_file):
         self.commands = {
             'w': self.write,
             'q': self.quit,
@@ -31,11 +31,11 @@ class MainWidget(urwidgets.CommandFrame):
         self.last_search = None
         self.last_search_direction = None
 
-        self.buff = buff
+        self.rom_file = rom_file
 
         self.current_json = None
 
-        self.pokemon = tuple(self.buff.pokemon)
+        self.pokemon = tuple(self.rom_file.buffer.pokemon)
 
         self.moves = sorted([
             key
@@ -563,23 +563,23 @@ class MainWidget(urwidgets.CommandFrame):
         self.updateCenterColumn()
 
         fname_widget = urwid.AttrMap(
-            urwid.Text('%s\n' % self.buff.fname, align='center'),
+            urwid.Text('%s\n' % self.rom_file.fname, align='center'),
             'buffername', 'buffername',
         )
         super(MainWidget, self).__init__(self.columns, header=fname_widget)
 
     def edit_file(self, fname, discard=False):
-        if self.buff.dirty and not discard:
+        if self.rom_file.dirty and not discard:
             self.change_status('No write since last change (add ! to override)')
         else:
             try:
                 with open(fname, 'rb') as fp:
-                    self.buff = domain.ROMBuffer(fp)
-                self.pokemon = tuple(self.buff.pokemon)
+                    self.rom_file = ROMFile(fp)
+                self.pokemon = tuple(self.rom_file.buffer.pokemon)
                 self.updateLeftColumn()
                 self.updateCenterColumn()
                 fname_widget = urwid.AttrMap(
-                    urwid.Text('%s\n' % self.buff.fname, align='center'),
+                    urwid.Text('%s\n' % self.rom_file.fname, align='center'),
                     'buffername', 'buffername',
                 )
                 self.header = fname_widget
@@ -587,20 +587,18 @@ class MainWidget(urwidgets.CommandFrame):
                 self.change_status('File not found')
 
     def quit(self, discard=False):
-        if self.buff.dirty and not discard:
+        if self.rom_file.dirty and not discard:
             self.change_status('No write since last change (add ! to override)')
         else:
             raise urwid.ExitMainLoop()
 
     def write(self, fname=None):
-        fname = fname if fname else self.buff.fname
-        with open(fname, 'wb') as fp:
-            self.buff.write(fp)
+        self.rom_file.write(fname)
 
     def import_json(self, fname):
         try:
             with open(fname, 'r') as fp:
-                mappers.json.load(fp, self.buff)
+                mappers.json.load(fp, self.rom_file.buffer)
                 self.current_json = fname
         except IOError:
             self.change_status('File not found')
@@ -615,7 +613,7 @@ class MainWidget(urwidgets.CommandFrame):
                 self.change_status("Not a valid file name")
                 return
         with open(fname, 'w') as fp:
-            mappers.json.dump(fp, self.buff)
+            mappers.json.dump(fp, self.rom_file.buffer)
 
     def inc_search(self, query, start=0, direction='forward'):
         current_list = self.columns.focus

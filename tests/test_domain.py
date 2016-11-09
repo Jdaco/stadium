@@ -1,6 +1,6 @@
 #!/usr/bin/python2
 import stadium.maps as maps
-from stadium.domain import Pokemon, Moveset
+from stadium.domain import Pokemon, Moveset, FileBufferWrapper, ROMFile
 import pytest
 from mock import patch, Mock, MagicMock
 
@@ -295,4 +295,52 @@ class TestMoveset:
         with pytest.raises(ValueError):
             self.sut[0] = 'not a move'
 
-    
+class TestFileBufferWrapper:
+    def setup_method(self):
+        self.rom_file = Mock()
+        self.rom_file.dirty = False
+        self.moves = [10, 20, 30, 40]
+        self.buffer = BufferMock( self.moves )
+        self.sut = FileBufferWrapper(self.buffer, self.rom_file)
+
+    def test_dirty_new_value(self):
+        self.sut[0] = 50
+
+        assert self.rom_file.dirty is True
+
+    def test_dirty_same_value(self):
+        self.sut[0] = self.moves[0]
+
+        assert self.rom_file.dirty is False
+
+class TestROMFile:
+    def setup_method(self):
+        self.data = Mock()
+        self.data.binary = bytearray((10, 20, 30, 40))
+        self.fname = 'test-1'
+        self.factory = Mock(return_value = self.data)
+
+    def test_write_default_fname(self, tmpdir):
+        fp = tmpdir.join(self.fname)
+        fp.write_binary(self.data.binary)
+        sut = ROMFile(str(fp), self.factory)
+
+        sut.buffer.binary[0] = 50
+        sut.write()
+
+        assert bytearray(fp.read_binary()) == self.data.binary
+        assert len(tmpdir.listdir()) == 1
+        assert sut.dirty is False
+
+    def test_write_new_fname(self, tmpdir):
+        fp = tmpdir.join(self.fname)
+        fp.write_binary(self.data.binary)
+        sut = ROMFile(str(fp), self.factory)
+        new_fp = tmpdir.join(self.fname + self.fname)
+
+        sut.buffer.binary[0] = 50
+        sut.write(str(new_fp))
+
+        assert bytearray(new_fp.read_binary()) == self.data.binary
+        assert len(tmpdir.listdir()) == 2
+        assert sut.dirty is False

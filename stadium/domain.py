@@ -1,22 +1,92 @@
 #!/usr/bin/python2
 import maps
 import math
+from py import path
+from abc import ABCMeta, abstractproperty
+
+def BufferFactory(byte_array):
+    return PALBuffer(byte_array)
+        
+class FileBufferWrapper(object):
+    def __init__(self, rom_buffer, rom_file):
+        self.__dict__['buffer'] = rom_buffer
+        self.__dict__['file'] = rom_file
+
+    def __getattr__(self, name):
+        return getattr(self.buffer, name)
+
+    def __setattr__(self, name, value):
+        return setattr(self.buffer, name, value)
+
+    def __getitem__(self, index):
+        return self.buffer[index]
+
+    def __setitem__(self, index, value):
+        orig_value = self.buffer[index]
+        self.buffer[index] = value
+        if orig_value != value:
+            self.file.dirty = True
+
+    @property
+    def pokemon(self):
+        for p in self.buffer.pokemon:
+            p.buff = self
+            yield p
+
+class ROMFile(object):
+    def __init__(self, fname, buffer_factory):
+        self.file = path.local(fname)
+        
+        byte_array = self.file.read_binary()
+        self.buffer = FileBufferWrapper(buffer_factory(byte_array), self)
+
+        self.dirty = False
+
+    def write(self, fname=None):
+        if fname:
+            path.local(fname).write_binary(self.buffer.binary)
+        else:
+            self.file.write_binary(self.buffer.binary)    
+        self.dirty = False
 
 class ROMBuffer(object):
+    
+    __metaclass__ = ABCMeta
 
-    _rentalStart = 0x1708CB4
-    _base = 0x99080
-    _baseHp = 1
-    _baseAtt = 2
-    _baseDef = 3
-    _baseSpeed = 4
-    _baseSatt = 5
-    _baseSdef = 6
+    @abstractproperty
+    def _rentalStart(self):
+        pass
 
-    def __init__(self, fp):
-        self.fname = fp.name
-        self.binary = bytearray(fp.read())
-        self.dirty = False
+    @abstractproperty
+    def _base(self):
+        pass
+
+    @abstractproperty
+    def _baseHp(self):
+        pass
+
+    @abstractproperty
+    def _baseAtt(self):
+        pass
+
+    @abstractproperty
+    def _baseDef(self):
+        pass
+
+    @abstractproperty
+    def _baseSpeed(self):
+        pass
+
+    @abstractproperty
+    def _baseSatt(self):
+        pass
+
+    @abstractproperty
+    def _baseSdef(self):
+        pass
+
+    def __init__(self, byte_array):
+        self.binary = byte_array
 
     def baseStats(self, species):
         index = self._base + 22 * (maps.pokemon[species] - 1)
@@ -36,16 +106,22 @@ class ROMBuffer(object):
             Pokemon(self, i) for i in xrange(self._rentalStart, self._rentalStart + 246 * 24, 24)
         )
 
-    def write(self, fp):
-        fp.write(self.binary)
-        self.dirty = False
-
     def __getitem__(self, index):
         return self.binary[index]
 
     def __setitem__(self, index, value):
         self.binary[index] = value
-        self.dirty = True
+
+class PALBuffer(ROMBuffer):
+    _rentalStart = 0x1708CB4
+    _base = 0x99080
+    _baseHp = 1
+    _baseAtt = 2
+    _baseDef = 3
+    _baseSpeed = 4
+    _baseSatt = 5
+    _baseSdef = 6
+    
 
 
 class Moveset(object):

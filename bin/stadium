@@ -1,7 +1,7 @@
 #!/usr/bin/python2
 import argparse
 from stadium import mappers
-from stadium.domain import ROMBuffer
+from stadium.domain import BufferFactory, ROMFile
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -21,7 +21,7 @@ if __name__ == "__main__":
                         help="Pokemon Stadium 2 ROM file to read from")
     args = parser.parse_args()
     
-    rom = ROMBuffer(args.rom)
+    rom = ROMFile(args.rom, BufferFactory)
     args.rom.close()
     if args.imported:
         mappers.json.load(args.imported, rom)
