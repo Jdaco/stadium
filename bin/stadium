@@ -24,10 +24,10 @@ if __name__ == "__main__":
     args.rom.close()
     rom = ROMFile(args.rom.name, BufferFactory)
     if args.imported:
-        mappers.json.load(args.imported, rom)
+        mappers.json.load(args.imported, rom.buffer)
         args.imported.close()
     if args.exported:
-        mappers.json.dump(args.exported, rom)
+        mappers.json.dump(args.exported, rom.buffer)
         args.exported.close()
     if args.output:
         rom.write(args.output)
