@@ -263,7 +263,7 @@ class TestMoveset:
         ] = move_name
         value = self.sut[index]
 
-        assert value == move_name
+        assert str(value) == move_name
 
     def test_getitem_below_zero(self):
         with pytest.raises(IndexError):
@@ -294,6 +294,9 @@ class TestMoveset:
     def test_setitem_invalid_move(self):
         with pytest.raises(ValueError):
             self.sut[0] = 'not a move'
+
+class TestMove:
+    pass
 
 class TestFileBufferWrapper:
     def setup_method(self):

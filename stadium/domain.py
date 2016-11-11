@@ -128,6 +128,30 @@ class PALBuffer(ROMBuffer):
     
 
 
+class Move(object):
+    def __init__(self, buff, addr):
+        self.buff = buff
+        self.addr = addr
+
+    def __str__(self):
+        byte = self.buff[self.addr]
+        if byte == 0:
+            return ''
+        return maps.moves_reversed[byte]
+
+    def __int__(self):
+        return self.buff[self.addr]
+
+    def set(self, value):
+        if value is None or value == 0
+            move = 0
+        elif value.lower() not in maps.moves:
+            raise ValueError("Invalid Move")
+        else:
+            move = maps.moves[value.lower()]
+            self.buff[self.addr] = move
+
+
 class Moveset(object):
     def __init__(self, buff, addr):
         self.addr = addr
@@ -144,18 +168,12 @@ class Moveset(object):
     def __getitem__(self, index):
         if index > 3 or index < 0:
             raise IndexError("Invalid index")
-        byte = self.buff[self.addr + index]
-        if byte == 0:
-            return None
-        return maps.moves_reversed[byte]
+        return Move(self.buff, self.addr + index)
 
     def __setitem__(self, index, value):
         if index > 3 or index < 0:
             raise IndexError("Invalid index")
-        elif value is not None and value.lower() not in maps.moves:
-            raise ValueError("Invalud Move")
-        move = maps.moves[value.lower()] if value is not None else 0
-        self.buff[self.addr + index] = move
+        self[index].set(value)
 
     def __iter__(self):
         return (
